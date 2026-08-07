@@ -1728,6 +1728,8 @@
     var evre = gunDurum && gunDurum.asama ? gunDurum.asama : null;
     if (evre === 'yukleme') return { tip: 'yukleme', ilerleme: 0, tamam: 0, yolda: 'Depoda yükleme yapılıyor' };
     if (evre === 'baslama') return { tip: 'yolda', ilerleme: Math.min(1, (t - baslamaS) / (varis - baslamaS) * 0.3), tamam: 0, yolda: 'Tokat → ' + sehir + ' · ' + ilKm[sehir] + ' km' };
+    if (evre === 'donus') return { tip: 'donus', ilerleme: 1, tamam: adet, yolda: 'Şoför depoya dönüyor' };
+    if (!gunDurum || (!gunDurum.yukleme && !gunDurum.baslama)) return { tip: 'bekleme', ilerleme: 0, tamam: 0, yolda: 'Şoför güne henüz başlamadı — buton bekleniyor' };
     if (t < yuklemeS) return { tip: 'hazirlik', ilerleme: 0, tamam: 0, yolda: 'Depo yükleme saat ' + saatYaz(yuklemeS) + '’da başlayacak' };
     if (t < baslamaS) return { tip: 'yukleme', ilerleme: 0, tamam: 0, yolda: 'Depoda yükleme yapılıyor' };
     if (t < varis) return { tip: 'yolda', ilerleme: (t - baslamaS) / (varis - baslamaS) * 0.3, tamam: 0, yolda: 'Tokat → ' + sehir + ' · ' + ilKm[sehir] + ' km' };
@@ -1791,13 +1793,13 @@
         bilgi = { tamam: magazaSayisi(sehir) + ' / ' + magazaSayisi(sehir) + ' mağaza', yolda: d.yolda, varis: saatYaz(varisSaati(sehir)) };
       } else {
         var hazirlikta = d.tip === 'hazirlik' || d.tip === 'yukleme';
-        etiket.textContent = 'CANLI';
-        baslik.textContent = 'Bugünkü Rota';
+        etiket.textContent = d.tip === 'bekleme' ? 'BEKLEMEDE' : d.tip === 'donus' ? 'DÖNÜŞTE' : 'CANLI';
+        baslik.textContent = d.tip === 'bekleme' ? 'Şoför Henüz Başlamadı' : d.tip === 'donus' ? 'Dönüşte' : 'Bugünkü Rota';
         durumlar[0] = { aktif: d.tip === 'yukleme', txt: hazirlikta ? (d.tip === 'yukleme' ? 'Yükleme' : 'Hazırlıkta') : '✔ Tamam', cls: hazirlikta ? '' : 'ok' };
-        durumlar[1] = { aktif: false, txt: d.tip === 'yukleme' ? 'Bekliyor' : '✔ Çıkış', cls: d.tip === 'yukleme' ? '' : 'ok' };
-        durumlar[2] = { aktif: d.tip === 'yolda', txt: d.tip === 'yolda' ? 'Yolda' : (d.tip === 'teslimat' ? '✔ Varıldı' : 'Bekliyor'), cls: d.tip === 'yolda' ? 'yolda' : (d.tip === 'teslimat' ? 'ok' : '') };
+        durumlar[1] = { aktif: d.tip === 'baslama', txt: d.tip === 'yukleme' ? 'Bekliyor' : (d.tip === 'baslama' || d.tip === 'donus' ? '✔ Çıkış' : (d.tip === 'bekleme' ? 'Bekliyor' : '✔ Çıkış')), cls: d.tip === 'baslama' ? 'yolda' : (d.tip === 'yukleme' || d.tip === 'bekleme' ? '' : 'ok') };
+        durumlar[2] = { aktif: d.tip === 'yolda', txt: d.tip === 'yolda' ? 'Yolda' : (d.tip === 'teslimat' || d.tip === 'donus' ? '✔ Varıldı' : 'Bekliyor'), cls: d.tip === 'yolda' ? 'yolda' : (d.tip === 'teslimat' || d.tip === 'donus' ? 'ok' : '') };
         durumlar[3] = { aktif: d.tip === 'teslimat', txt: d.tip === 'teslimat' ? 'Dağıtımda · ' + gosterTamam(d.tamam) + '/' + magazaSayisi(sehir) : 'Bekliyor', cls: d.tip === 'teslimat' ? 'yolda' : '' };
-        durumlar[4] = { aktif: false, txt: 'Bekliyor', cls: '' };
+        durumlar[4] = { aktif: d.tip === 'donus', txt: d.tip === 'donus' ? 'Depoya Dönüş' : 'Bekliyor', cls: d.tip === 'donus' ? 'yolda' : '' };
         bilgi = { tamam: gosterTamam(d.tamam) + ' / ' + magazaSayisi(sehir) + ' mağaza', yolda: d.yolda, varis: saatYaz(varisSaati(sehir)) + ' (tahmini)' };
       }
     }

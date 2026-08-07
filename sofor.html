@@ -537,6 +537,10 @@
       method: 'PUT',
       body: JSON.stringify({ il: seciliIl, ilce: seciliIlce, baslangic: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }), varisTahmini: hesap.saat, ts: Date.now() })
     }).catch(function () {});
+    fetch(FIREBASE_URL + '/durum/' + tarihYaz(new Date()) + '.json', {
+      method: 'PATCH',
+      body: JSON.stringify({ asama: 'donus' })
+    }).catch(function () {});
   });
 
   function yukle() {
