@@ -284,6 +284,7 @@
   var durumlar = {};
   var gunDurum = {};
   var sonZiyaretler = {};
+  var tamKonumlar = {};
   var ilKm = { SAMSUN: 150, SİNOP: 220, AMASYA: 90, ÇORUM: 180, SİVAS: 95, TOKAT: 140, YOZGAT: 160, GİRESUN: 230, KAYSERİ: 220 };
   var ortalamaHiz = 85;
   function varisSaati(s) {
@@ -396,7 +397,11 @@
     return p[2] + '.' + p[1] + '.' + p[0];
   }
 
-  function magazaKoordinat(sehir, ilce) {
+  function magazaKoordinat(sehir, ilce, kod) {
+    if (kod && tamKonumlar[kod]) {
+      var tk = tamKonumlar[kod];
+      if (tk.lat && tk.lng) return [tk.lat, tk.lng];
+    }
     var s = KOORDINATLAR[sehir];
     if (!s) return null;
     var k = s[ilce] || s['_merkez'];
@@ -442,14 +447,18 @@
         var alt = (ziyaret ? 'Son uğrama: ' + tarihKisa(ziyaret.tarih) + ' · ' : 'İlk ziyaret · ') + m.i;
         var tip = m.t || 'S';
         var rozet = '<span class="rozet ' + (tip === 'T' ? 'tk' : tip === 'D' ? 'dig' : 'sok') + '">' + TIP_AD[tip] + '</span>';
-        var koord = magazaKoordinat(grup[i].ilAd, m.i);
+        var koord = magazaKoordinat(grup[i].ilAd, m.i, m.k);
         var navBtn = koord
           ? '<a class="btn nav" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=' + koord[0] + ',' + koord[1] + '" title="Navigasyonu aç" style="text-decoration:none; background:#eef2f7; color:#1d6fa5; padding:11px 12px;">📍</a>'
           : '';
+        var tamVar = tamKonumlar[m.k] && tamKonumlar[m.k].lat && tamKonumlar[m.k].lng;
+        var kayitBtn = tamVar
+          ? '<span class="rozet sok" style="font-size:.6rem;">✓ KONUM</span>'
+          : '<button class="btn nav kaydet" data-kaydet="' + m.k + '" title="Mağazanın tam konumunu GPS ile kaydet" style="text-decoration:none; background:#fff4e5; color:#b35c00; padding:11px 12px;">📌</button>';
         html += '<div class="magaza">' +
           '<div><div class="ad">' + m.m + rozet + '</div>' +
           '<div class="saat">' + (d ? (d.red ? '✗ ' + d.red : 'Teslim: ' + d.saat) + ' · ' + alt : alt) + '</div></div>' +
-          '<div style="display:flex;gap:6px;align-items:center;">' + navBtn +
+          '<div style="display:flex;gap:6px;align-items:center;">' + navBtn + kayitBtn +
           (d
             ? (d.red
               ? '<button class="btn geri-al" data-geri="' + m.k + '" style="background:#fdecea;color:#c0392b;">✗ ' + d.red + '</button>'
@@ -518,7 +527,34 @@
     if (geriRed && confirm('Bu mağazanın "teslim edilemedi" işaretini geri al?')) {
       silKayit(geriRed.getAttribute('data-geri'), listeCiz);
     }
+    var kaydetBtn = e.target.closest('.btn.kaydet');
+    if (kaydetBtn) {
+      konumKaydet(kaydetBtn.getAttribute('data-kaydet'));
+    }
   });
+
+  function konumKaydet(kod) {
+    if (!navigator.geolocation) {
+      alert('Bu tarayıcı GPS desteklemiyor.');
+      return;
+    }
+    baglanti.textContent = 'Konum alınıyor…';
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      var kayit = { lat: pos.coords.latitude, lng: pos.coords.longitude, saat: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }), tarih: tarihYaz(new Date()) };
+      fetch(FIREBASE_URL + '/konumkayit/' + kod + '.json', {
+        method: 'PUT',
+        body: JSON.stringify(kayit)
+      }).then(function () {
+        tamKonumlar[kod] = kayit;
+        baglanti.textContent = '✓ Konum kaydedildi (' + kod + ')';
+        listeCiz();
+      }).catch(function () {
+        baglanti.textContent = 'Bağlantı hatası — konum kaydedilemedi';
+      });
+    }, function (err) {
+      baglanti.textContent = 'Konum alınamadı — GPS açık ve izin verilmiş olmalı';
+    }, { enableHighAccuracy: true, timeout: 15000 });
+  }
 
   var yuklemeBtn = document.getElementById('yukleme-btn');
   var baslamaBtn = document.getElementById('baslama-btn');
@@ -629,6 +665,10 @@
     });
     fetch(FIREBASE_URL + '/sonziyaret.json').then(function (r) { return r.json(); }).then(function (d) {
       if (d) sonZiyaretler = d;
+      listeCiz();
+    }).catch(function () { });
+    fetch(FIREBASE_URL + '/konumkayit.json').then(function (r) { return r.json(); }).then(function (d) {
+      if (d) tamKonumlar = d;
       listeCiz();
     }).catch(function () { });
     durumOku();
