@@ -245,6 +245,18 @@
     { ad: 'GALETA', sutun: 'J' },
     { ad: 'TAM BUĞDAY LAVAŞ', sutun: 'K' }
   ];
+  var BAGETTA_URUNLER = [
+    { ad: 'TARSUS ÇÖREĞİ', sutun: 'D' },
+    { ad: 'ÜNYE ÇÖREĞİ', sutun: 'E' },
+    { ad: 'KANDİL SİMİTİ', sutun: 'F' },
+    { ad: 'KONYA GEVREĞİ', sutun: 'G' },
+    { ad: 'SUSAMLI ÇÖREK', sutun: 'H' },
+    { ad: 'SAC EKMEĞİ', sutun: 'I' },
+    { ad: 'GALETA', sutun: 'J' }
+  ];
+  function markaListesi(tip) {
+    return tip === 'T' ? BAGETTA_URUNLER : URUNLER;
+  }
 
   function ciz() {
     var html = '';
@@ -256,6 +268,9 @@
         ad = gunlukListe[i - 1].m;
         alt = gunlukListe[i - 1].i;
       }
+      var mTip = (gunlukListe && gunlukListe[i - 1] && gunlukListe[i - 1].t) || 'S';
+      var markaAd = mTip === 'T' ? 'BAĞETTA' : 'TAMKÖY';
+      var markaRozet = '<span class="rozet" style="background:#f0e6f7;color:#8e44ad;">' + markaAd + '</span>';
       var rozet;
       var altSaat;
       if (d) {
@@ -265,9 +280,10 @@
           altSaat = 'Teslim: ' + d.saat;
           if (d.urunler) {
             var urunYazi = [];
-            for (var u = 0; u < URUNLER.length; u++) {
-              var deger = d.urunler[URUNLER[u].sutun];
-              if (deger && deger > 0) urunYazi.push(URUNLER[u].ad + ': ' + deger);
+            var l2 = markaListesi(mTip);
+            for (var u = 0; u < l2.length; u++) {
+              var deger = d.urunler[l2[u].sutun];
+              if (deger && deger > 0) urunYazi.push(l2[u].ad + ': ' + deger);
             }
             if (urunYazi.length) altSaat += ' — ' + urunYazi.join(', ');
           }
@@ -277,7 +293,7 @@
         altSaat = alt || '';
       }
       html += '<div class="magaza">' +
-        '<div><div class="ad">' + ad + '</div><div class="saat">' + (altSaat || '') + '</div></div>' +
+        '<div><div class="ad">' + ad + markaRozet + '</div><div class="saat">' + (altSaat || '') + '</div></div>' +
         rozet +
         '</div>';
     }

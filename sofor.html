@@ -137,6 +137,18 @@
     { ad: 'GALETA', sutun: 'J' },
     { ad: 'TAM BUĞDAY LAVAŞ', sutun: 'K' }
   ];
+  var BAGETTA_URUNLER = [
+    { ad: 'TARSUS ÇÖREĞİ', sutun: 'D' },
+    { ad: 'ÜNYE ÇÖREĞİ', sutun: 'E' },
+    { ad: 'KANDİL SİMİTİ', sutun: 'F' },
+    { ad: 'KONYA GEVREĞİ', sutun: 'G' },
+    { ad: 'SUSAMLI ÇÖREK', sutun: 'H' },
+    { ad: 'SAC EKMEĞİ', sutun: 'I' },
+    { ad: 'GALETA', sutun: 'J' }
+  ];
+  function markaListesi(tip) {
+    return tip === 'T' ? BAGETTA_URUNLER : URUNLER;
+  }
 </script>
 <script src="magazalar.js"></script>
 <script>
@@ -298,6 +310,7 @@
   var urunListesi = document.getElementById('urun-listesi');
   var modalMagaza = document.getElementById('modal-magaza');
   var beklemeKod = null;
+  var beklemeMarka = 'TAMKOY';
 
   function magazaBul(kod) {
     for (var l = 0; l < MAGAZALAR.length; l++) {
@@ -315,13 +328,18 @@
     if (!bul) return;
     var m = bul.magaza;
     var ziyaret = sonZiyaretler[kod];
+    var tip = m.t || 'S';
+    var markaAd = tip === 'T' ? 'BAĞETTA' : 'TAMKÖY';
     modalMagaza.textContent = bul.il + ' · ' + m.m + ' · ' + m.i +
-      (ziyaret ? ' · Son uğrama: ' + ziyaret.tarih : ' · İlk ziyaret');
+      (ziyaret ? ' · Son uğrama: ' + ziyaret.tarih : ' · İlk ziyaret') +
+      ' · ' + markaAd;
     beklemeKod = kod;
+    beklemeMarka = tip === 'T' ? 'BAGETTA' : 'TAMKOY';
+    var liste = markaListesi(tip);
     var html = '';
-    for (var u = 0; u < URUNLER.length; u++) {
-      html += '<div class="urun-satir"><span class="ad">' + URUNLER[u].ad + '</span>' +
-        '<input type="number" inputmode="numeric" min="0" placeholder="0" data-sutun="' + URUNLER[u].sutun + '"></div>';
+    for (var u = 0; u < liste.length; u++) {
+      html += '<div class="urun-satir"><span class="ad">' + liste[u].ad + '</span>' +
+        '<input type="number" inputmode="numeric" min="0" placeholder="0" data-sutun="' + liste[u].sutun + '"></div>';
     }
     urunListesi.innerHTML = html;
     urunModal.style.display = 'flex';
@@ -346,9 +364,9 @@
     var adres = FIREBASE_URL + '/gunluk/' + bugun + '/' + bul.il + '/' + bul.sira + '.json';
     fetch(adres, {
       method: 'PUT',
-      body: JSON.stringify({ saat: saat, urunler: girisler, magaza: magazaAd, k: beklemeKod })
+      body: JSON.stringify({ saat: saat, urunler: girisler, magaza: magazaAd, k: beklemeKod, marka: beklemeMarka })
     }).then(function () {
-      durumlar[beklemeKod] = { saat: saat, urunler: girisler, magaza: magazaAd, k: beklemeKod };
+      durumlar[beklemeKod] = { saat: saat, urunler: girisler, magaza: magazaAd, k: beklemeKod, marka: beklemeMarka };
       var ziyaretAdres = FIREBASE_URL + '/sonziyaret/' + beklemeKod + '.json';
       return fetch(ziyaretAdres, { method: 'PUT', body: JSON.stringify({ tarih: bugun, saat: saat }) });
     }).then(function () {
