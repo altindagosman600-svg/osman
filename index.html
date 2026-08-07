@@ -1191,6 +1191,7 @@
 </footer>
 
 <script src="magazalar.js"></script>
+<script src="koordinatlar.js"></script>
 <script>
   var URUNLER = [
     { ad: 'Bagetta Sac Ekmeği', aciklama: '300 gr — günlük taze üretim', detay: 'Baget formunda, özel fırınlama tekniğiyle üretilen sac ekmeği. Mağaza rafları için idealdir.', foto: 'gorseller/sacekmegi.jpg', ikon: '🥖' },
@@ -1439,7 +1440,7 @@
     var sonGecis = -1;
     var teslimZaman = {};
     function opsKare(simdi) {
-      var gunBugun = haftalikRota[new Date().getDay()];
+      var gunBugun = aktifSecim ? aktifSecim.il : '';
       var patlamaSehir = gunBugun ? gunBugun.toUpperCase() : '';
       var patMerkez = null;
       for (var ps = 0; ps < opsSehirler.length; ps++) {
@@ -1543,12 +1544,11 @@
     if (s) s.classList.toggle('aktif', aktif);
   }
   function opPanelGuncelle() {
-    var gun2 = new Date().getDay();
-    var sehir2 = aktifSehir || haftalikRota[gun2];
+    var sehir2 = aktifSehir;
     var d2 = sehir2 ? canliDurum(new Date().getHours() + new Date().getMinutes() / 60, sehir2) : null;
-    opSatir('op-yukleme', d2 && (d2.tip === 'hazirlik' || d2.tip === 'yukleme'));
+    opSatir('op-yukleme', d2 && d2.tip === 'yukleme');
     var opYuklemeSaat = document.getElementById('op-yukleme-saat');
-    if (opYuklemeSaat) opYuklemeSaat.textContent = d2 ? saatYaz(saatVekil('yukleme', 7.5)) : '—';
+    if (opYuklemeSaat) opYuklemeSaat.textContent = gunDurum.yukleme ? gunDurum.yukleme : '—';
     opSatir('op-yol', d2 && d2.tip === 'yolda');
     opSatir('op-teslim', d2 && d2.tip === 'teslimat');
     opSatir('op-sehir', d2 && d2.tip === 'teslimat');
@@ -1569,8 +1569,8 @@
       opSehirAd.textContent = aktifSehir || '—';
       opSehirAlt.textContent = aktifSecim.ilce ? 'Şoför seçimi · ' + ilceListesi(aktifSecim.ilce) : 'Şoförün seçtiği şehir';
     } else {
-      opSehirAd.textContent = sehir2 ? sehir2 : '—';
-      opSehirAlt.textContent = 'Bugünkü şehir';
+      opSehirAd.textContent = '—';
+      opSehirAlt.textContent = 'Şoför henüz seçim yapmadı';
     }
     var yuzde = 0;
     if (d2) {
@@ -1637,17 +1637,18 @@
   modalArka.addEventListener('click', function (e) { if (e.target === modalArka) modalKapat(); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') modalKapat(); });
 
-  var haftalikRota = ['', 'Samsun', 'Sinop', 'Amasya', 'Çorum', 'Sivas', 'Tokat'];
-  var ilKoor = { Samsun: { x: 360, y: 50 }, Sinop: { x: 80, y: 55 }, Giresun: { x: 565, y: 45 }, Amasya: { x: 240, y: 100 }, Çorum: { x: 150, y: 150 }, Sivas: { x: 480, y: 170 }, Kayseri: { x: 310, y: 300 }, Yozgat: { x: 215, y: 230 } };
+  var ilKoor = { Samsun: { x: 360, y: 50 }, Sinop: { x: 80, y: 55 }, Giresun: { x: 565, y: 45 }, Amasya: { x: 240, y: 100 }, Çorum: { x: 150, y: 150 }, Sivas: { x: 480, y: 170 }, Kayseri: { x: 310, y: 300 }, Yozgat: { x: 215, y: 230 }, Tokat: { x: 350, y: 140 } };
   var merkez = { x: 350, y: 140 };
-  var ilKm = { Samsun: 150, Sinop: 210, Giresun: 250, Amasya: 90, Çorum: 180, Sivas: 95, Tokat: 40, Yozgat: 160, Kayseri: 220 };
-  var ortalamaHiz = 85;
   var FIREBASE_URL = 'https://nokta-tedarik-default-rtdb.firebaseio.com';
   var firebaseTamam = -1;
   var aktifSecim = null;
   var aktifDonus = null;
   var aktifSehir = '';
   var gunDurum = {};
+  var aktifVarisSaat = '';
+  var aktifIlkTeslim = '';
+  var aktifSonTeslim = '';
+  var aktifKonum = null;
   function duzIlAdi(ad) {
     var n = normalize(ad);
     for (var l = 0; l < MAGAZALAR.length; l++) {
@@ -1665,14 +1666,27 @@
       .then(function (r) { return r.json(); })
       .then(function (s) {
         aktifSecim = s && s.il ? s : null;
-        var sehirAd = aktifSecim ? aktifSecim.il : haftalikRota[simdi.getDay()];
-        aktifSehir = aktifSecim ? duzIlAdi(aktifSecim.il) : haftalikRota[simdi.getDay()];
+        var sehirAd = aktifSecim ? aktifSecim.il : '';
+        aktifSehir = aktifSecim ? duzIlAdi(aktifSecim.il) : '';
         if (!sehirAd) { firebaseTamam = -1; canliGuncelle(); opPanelGuncelle(); return; }
         return fetch(FIREBASE_URL + '/gunluk/' + tarih + '/' + sehirAd + '.json')
           .then(function (r) { return r.json(); })
           .then(function (v) {
             var sayi = 0;
-            for (var anahtar in v) { if (v[anahtar] && !v[anahtar].red) sayi++; }
+            var ilkS = '', sonS = '';
+            for (var anahtar in v) {
+              if (v[anahtar] && !v[anahtar].red) {
+                sayi++;
+                var ts = v[anahtar].saat;
+                if (ts) {
+                  if (!ilkS || ts < ilkS) ilkS = ts;
+                  if (!sonS || ts > sonS) sonS = ts;
+                }
+              }
+            }
+            aktifIlkTeslim = ilkS;
+            aktifSonTeslim = sonS;
+            aktifVarisSaat = ilkS;
             firebaseTamam = v ? sayi : 0;
             return fetch(FIREBASE_URL + '/donus/' + tarih + '.json')
               .then(function (r) { return r.json(); })
@@ -1682,8 +1696,13 @@
                   .then(function (r) { return r.json(); })
                   .then(function (gd) {
                     gunDurum = gd && (gd.yukleme || gd.baslama) ? gd : {};
-                    canliGuncelle();
-                    opPanelGuncelle();
+                    return fetch(FIREBASE_URL + '/konum/guncel.json')
+                      .then(function (r) { return r.json(); })
+                      .then(function (kn) {
+                        aktifKonum = kn && kn.lat ? kn : null;
+                        canliGuncelle();
+                        opPanelGuncelle();
+                      });
                   });
               });
           });
@@ -1711,48 +1730,43 @@
   function gosterTamam(sayi) {
     return firebaseTamam >= 0 ? firebaseTamam : sayi;
   }
-  function varisSaati(sehir) {
-    return saatVekil('baslama', 8) + (ilKm[sehir] || 150) / ortalamaHiz;
-  }
-  function saatYaz(x) {
-    var dk = Math.round(x * 60);
-    var s = Math.floor(dk / 60), d = dk % 60;
-    return ('0' + s).slice(-2) + ':' + ('0' + d).slice(-2);
-  }
-  function saatVekil(anahtar, varsayilan) {
-    if (gunDurum && gunDurum[anahtar]) {
-      var p = gunDurum[anahtar].split(':');
-      if (p.length === 2) {
-        var s = parseInt(p[0], 10), d = parseInt(p[1], 10);
-        if (!isNaN(s) && !isNaN(d)) return s + d / 60;
-      }
+  function geoToSvg(lat, lng) {
+    if (typeof KOORDINATLAR === 'undefined') return null;
+    var enIyi = null, enD = Infinity;
+    for (var ilAd in KOORDINATLAR) {
+      var mk = KOORDINATLAR[ilAd]._merkez;
+      if (!mk) continue;
+      var dy = lat - mk[0], dx = lng - mk[1];
+      var dd = dy * dy + dx * dx;
+      if (dd < enD) { enD = dd; enIyi = ilAd; }
     }
-    return varsayilan;
+    if (!enIyi) return null;
+    var ilT = enIyi.charAt(0) + enIyi.slice(1).toLowerCase();
+    var k = ilKoor[ilT] || merkez;
+    return { x: k.x, y: k.y };
   }
   function canliDurum(t, sehir) {
-    var varis = varisSaati(sehir);
     var adet = magazaSayisi(sehir);
-    var donus = varis + adet * 15 / 60;
-    var yuklemeS = saatVekil('yukleme', 7.5);
-    var baslamaS = saatVekil('baslama', 8);
     var evre = gunDurum && gunDurum.asama ? gunDurum.asama : null;
+    var yuklemeV = gunDurum && gunDurum.yukleme;
+    var baslamaV = gunDurum && gunDurum.baslama;
+    if (!aktifSecim || !sehir) return { tip: 'bekleme', ilerleme: 0, tamam: 0, yolda: 'Şoför henüz bugünün şehrini seçmedi' };
     if (evre === 'yukleme') return { tip: 'yukleme', ilerleme: 0, tamam: 0, yolda: 'Depoda yükleme yapılıyor' };
-    if (evre === 'baslama') return { tip: 'yolda', ilerleme: Math.min(1, (t - baslamaS) / (varis - baslamaS) * 0.3), tamam: 0, yolda: 'Tokat → ' + sehir + ' · ' + ilKm[sehir] + ' km' };
+    if (evre === 'baslama') return { tip: 'yolda', ilerleme: 0.3, tamam: 0, yolda: 'Şoför yola çıktı — ' + sehir + ' yönünde' };
     if (evre === 'donus') return { tip: 'donus', ilerleme: 1, tamam: adet, yolda: 'Şoför depoya dönüyor' };
-    if (!gunDurum || (!gunDurum.yukleme && !gunDurum.baslama)) return { tip: 'bekleme', ilerleme: 0, tamam: 0, yolda: 'Şoför güne henüz başlamadı — buton bekleniyor' };
-    if (t < yuklemeS) return { tip: 'hazirlik', ilerleme: 0, tamam: 0, yolda: 'Depo yükleme saat ' + saatYaz(yuklemeS) + '’da başlayacak' };
-    if (t < baslamaS) return { tip: 'yukleme', ilerleme: 0, tamam: 0, yolda: 'Depoda yükleme yapılıyor' };
-    if (t < varis) return { tip: 'yolda', ilerleme: (t - baslamaS) / (varis - baslamaS) * 0.3, tamam: 0, yolda: 'Tokat → ' + sehir + ' · ' + ilKm[sehir] + ' km' };
-    if (t < donus) return { tip: 'teslimat', ilerleme: 0.3 + (t - varis) / (adet * 0.25) * 0.7, tamam: Math.min(adet, Math.floor((t - varis) * 60 / 15)), yolda: sehir + ' içinde mağaza teslimatı' };
-    return { tip: 'tamam', ilerleme: 1, tamam: adet, yolda: 'Tüm teslimatlar tamamlandı' };
+    if (!yuklemeV && !baslamaV) return { tip: 'bekleme', ilerleme: 0, tamam: 0, yolda: 'Şoför güne henüz başlamadı — buton bekleniyor' };
+    if (yuklemeV && !baslamaV) return { tip: 'yukleme', ilerleme: 0, tamam: 0, yolda: 'Depoda yükleme yapılıyor' };
+    if (firebaseTamam === 0) return { tip: 'yolda', ilerleme: 0.3, tamam: 0, yolda: 'Şoför yola çıktı — ' + sehir + ' yönünde' };
+    if (firebaseTamam >= adet && adet > 0) return { tip: 'tamam', ilerleme: 1, tamam: adet, yolda: 'Tüm teslimatlar tamamlandı' };
+    return { tip: 'teslimat', ilerleme: 0.3 + Math.min(0.7, firebaseTamam / (adet || 1) * 0.7), tamam: firebaseTamam, yolda: sehir + ' içinde mağaza teslimatı' };
   }
   function canliGuncelle() {
     var simdi = new Date();
     var gun = simdi.getDay();
     var t = simdi.getHours() + simdi.getMinutes() / 60;
     var gunAd = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
-    var sehir = aktifSehir || haftalikRota[gun];
-    var haftaIci = !!sehir;
+    var sehir = aktifSehir;
+    var haftaIci = !!sehir && !!aktifSecim;
     var ilerleme = 0;
     var durumlar = [
       { aktif: false, txt: '', cls: '' },
@@ -1774,15 +1788,15 @@
     document.getElementById('rota-sehir2').textContent = haftaIci ? sehir : '—';
     document.getElementById('rota-sehir3').textContent = haftaIci ? sehir : '—';
     document.getElementById('rota-adet').textContent = haftaIci ? magazaSayisi(sehir) + ' mağaza' : '—';
-    document.getElementById('rota-varis').textContent = haftaIci ? saatYaz(varisSaati(sehir)) : '—';
-    document.getElementById('rota-yukleme').textContent = haftaIci ? saatYaz(saatVekil('yukleme', 7.5)) : '—';
-    document.getElementById('rota-baslama').textContent = haftaIci ? saatYaz(saatVekil('baslama', 8)) : '—';
-    document.getElementById('rota-aralik').textContent = haftaIci ? saatYaz(varisSaati(sehir)) + '–' + saatYaz(varisSaati(sehir) + magazaSayisi(sehir) * 0.25) : '—';
-    document.getElementById('rota-donus').textContent = aktifDonus && aktifDonus.varisTahmini ? aktifDonus.varisTahmini : (haftaIci ? saatYaz(varisSaati(sehir) + magazaSayisi(sehir) * 0.25) : '—');
-    document.getElementById('op-varis-saat').textContent = haftaIci ? saatYaz(varisSaati(sehir)) : '—';
-    document.getElementById('op-donus-saat').textContent = aktifDonus && aktifDonus.varisTahmini ? aktifDonus.varisTahmini : (haftaIci ? saatYaz(varisSaati(sehir) + magazaSayisi(sehir) * 0.25) : '—');
+    document.getElementById('rota-varis').textContent = haftaIci && aktifVarisSaat ? aktifVarisSaat : '—';
+    document.getElementById('rota-yukleme').textContent = haftaIci && gunDurum.yukleme ? gunDurum.yukleme : '—';
+    document.getElementById('rota-baslama').textContent = haftaIci && gunDurum.baslama ? gunDurum.baslama : '—';
+    document.getElementById('rota-aralik').textContent = haftaIci && (aktifIlkTeslim && aktifSonTeslim) ? aktifIlkTeslim + '–' + aktifSonTeslim : (haftaIci && aktifIlkTeslim ? aktifIlkTeslim + ' – …' : '—');
+    document.getElementById('rota-donus').textContent = aktifDonus && aktifDonus.varisTahmini ? aktifDonus.varisTahmini : '—';
+    document.getElementById('op-varis-saat').textContent = haftaIci && aktifVarisSaat ? aktifVarisSaat : '—';
+    document.getElementById('op-donus-saat').textContent = aktifDonus && aktifDonus.varisTahmini ? aktifDonus.varisTahmini : '—';
     document.getElementById('canli-cikis').innerHTML = haftaIci
-      ? 'Tokat Merkez — DEPO YÜKLEME ' + saatYaz(saatVekil('yukleme', 7.5)) + '<br>Tokat Merkez — ÇIKIŞ ' + saatYaz(saatVekil('baslama', 8)) : '—';
+      ? 'Tokat Merkez — DEPO YÜKLEME ' + (gunDurum.yukleme || '—') + '<br>Tokat Merkez — ÇIKIŞ ' + (gunDurum.baslama || '—') : '—';
 
     if (!haftaIci) {
       etiket.textContent = 'KAPALI';
@@ -1800,17 +1814,17 @@
         durumlar[2] = { aktif: false, txt: '✔ Varıldı', cls: 'ok' };
         durumlar[3] = { aktif: false, txt: '✔ ' + magazaSayisi(sehir) + '/' + magazaSayisi(sehir) + ' Teslim Edildi', cls: 'ok' };
         durumlar[4] = { aktif: false, txt: '✔ TAMAMLANDI', cls: 'ok' };
-        bilgi = { tamam: magazaSayisi(sehir) + ' / ' + magazaSayisi(sehir) + ' mağaza', yolda: d.yolda, varis: saatYaz(varisSaati(sehir)) };
+        bilgi = { tamam: magazaSayisi(sehir) + ' / ' + magazaSayisi(sehir) + ' mağaza', yolda: d.yolda, varis: aktifSonTeslim ? aktifSonTeslim + ' (son teslim)' : '—' };
       } else {
-        var hazirlikta = d.tip === 'hazirlik' || d.tip === 'yukleme';
+        var hazirlikta = d.tip === 'yukleme';
         etiket.textContent = d.tip === 'bekleme' ? 'BEKLEMEDE' : d.tip === 'donus' ? 'DÖNÜŞTE' : 'CANLI';
         baslik.textContent = d.tip === 'bekleme' ? 'Şoför Henüz Başlamadı' : d.tip === 'donus' ? 'Dönüşte' : 'Bugünkü Rota';
-        durumlar[0] = { aktif: d.tip === 'yukleme', txt: hazirlikta ? (d.tip === 'yukleme' ? 'Yükleme' : 'Hazırlıkta') : '✔ Tamam', cls: hazirlikta ? '' : 'ok' };
+        durumlar[0] = { aktif: d.tip === 'yukleme', txt: d.tip === 'yukleme' ? 'Yükleme' : '✔ Tamam', cls: d.tip === 'yukleme' ? '' : 'ok' };
         durumlar[1] = { aktif: d.tip === 'baslama', txt: d.tip === 'yukleme' ? 'Bekliyor' : (d.tip === 'baslama' || d.tip === 'donus' ? '✔ Çıkış' : (d.tip === 'bekleme' ? 'Bekliyor' : '✔ Çıkış')), cls: d.tip === 'baslama' ? 'yolda' : (d.tip === 'yukleme' || d.tip === 'bekleme' ? '' : 'ok') };
         durumlar[2] = { aktif: d.tip === 'yolda', txt: d.tip === 'yolda' ? 'Yolda' : (d.tip === 'teslimat' || d.tip === 'donus' ? '✔ Varıldı' : 'Bekliyor'), cls: d.tip === 'yolda' ? 'yolda' : (d.tip === 'teslimat' || d.tip === 'donus' ? 'ok' : '') };
         durumlar[3] = { aktif: d.tip === 'teslimat', txt: d.tip === 'teslimat' ? 'Dağıtımda · ' + gosterTamam(d.tamam) + '/' + magazaSayisi(sehir) : 'Bekliyor', cls: d.tip === 'teslimat' ? 'yolda' : '' };
         durumlar[4] = { aktif: d.tip === 'donus', txt: d.tip === 'donus' ? 'Depoya Dönüş' : 'Bekliyor', cls: d.tip === 'donus' ? 'yolda' : '' };
-        bilgi = { tamam: gosterTamam(d.tamam) + ' / ' + magazaSayisi(sehir) + ' mağaza', yolda: d.yolda, varis: saatYaz(varisSaati(sehir)) + ' (tahmini)' };
+        bilgi = { tamam: gosterTamam(d.tamam) + ' / ' + magazaSayisi(sehir) + ' mağaza', yolda: d.yolda, varis: aktifVarisSaat ? aktifVarisSaat + ' (ilk teslim)' : '—' };
       }
     }
 
@@ -1832,15 +1846,18 @@
     heroIlcelerDoldur(haftaIci ? sehir : null);
     if (haftaIci && d && ilKoor[sehir]) {
       var hf = ilKoor[sehir];
-      var hF = 0;
-      if (d.tip === 'yolda') hF = Math.min(1, (t - saatVekil('baslama', 8)) / (varisSaati(sehir) - saatVekil('baslama', 8)));
-      else if (d.tip === 'teslimat') hF = 1;
-      else if (d.tip === 'tamam') hF = Math.max(0, 1 - Math.min(1, (t - varisSaati(sehir) - 7.5) / 3));
-      heroArac.setAttribute('x', (merkez.x + (hf.x - merkez.x) * hF) - 32);
-      heroArac.setAttribute('y', (merkez.y + (hf.y - merkez.y) * hF) - 26);
+      var hX = merkez.x, hY = merkez.y;
+      if (aktifKonum && aktifKonum.lat && aktifKonum.lng && aktifKonum.sehir) {
+        var cn = geoToSvg(aktifKonum.lat, aktifKonum.lng);
+        if (cn) { hX = cn.x; hY = cn.y; }
+      } else if (d.tip === 'tamam') {
+        hX = hf.x; hY = hf.y;
+      }
+      heroArac.setAttribute('x', hX - 32);
+      heroArac.setAttribute('y', hY - 26);
       heroArac.style.display = '';
       if (heroHat) heroHat.classList.add('hat-aktif');
-      heroDurum.textContent = d.tip === 'hazirlik' ? 'Hazırlıkta' : d.tip === 'yukleme' ? 'Yükleme' : d.tip === 'yolda' ? 'Yolda' : d.tip === 'teslimat' ? 'Dağıtımda · ' + gosterTamam(d.tamam) + '/' + magazaSayisi(sehir) : 'Gün Tamamlandı';
+      heroDurum.textContent = d.tip === 'yukleme' ? 'Yükleme' : d.tip === 'yolda' ? 'Yolda' : d.tip === 'teslimat' ? 'Dağıtımda · ' + gosterTamam(d.tamam) + '/' + magazaSayisi(sehir) : (d.tip === 'bekleme' ? 'Beklemede' : 'Gün Tamamlandı');
     } else {
       heroArac.style.display = 'none';
       if (heroHat) heroHat.classList.remove('hat-aktif');
