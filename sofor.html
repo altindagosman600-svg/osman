@@ -504,15 +504,21 @@
     var saat = new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
     var adres = FIREBASE_URL + '/durum/' + tarihYaz(new Date()) + '.json';
     var veri = {};
-    if (yuklemeMi) { gunDurum.yukleme = saat; veri.yukleme = saat; }
-    else { gunDurum.baslama = saat; veri.baslama = saat; }
+    if (yuklemeMi) {
+      gunDurum.yukleme = saat;
+      veri.yukleme = saat;
+      if (!gunDurum.baslama) { gunDurum.asama = 'yukleme'; veri.asama = 'yukleme'; }
+    } else {
+      gunDurum.baslama = saat;
+      veri.baslama = saat;
+      veri.asama = 'baslama';
+      gunDurum.asama = 'baslama';
+    }
     fetch(adres, { method: 'PATCH', body: JSON.stringify(veri) })
       .then(function () { durumButonYansit(); baglanti.textContent = 'Gün durumu kaydedildi — ' + saat; })
       .catch(function () { baglanti.textContent = 'Bağlantı hatası — kaydedilemedi'; });
     durumButonYansit();
   }
-  yuklemeBtn.addEventListener('click', function () { durumDamga(true); });
-  baslamaBtn.addEventListener('click', function () { durumDamga(false); });
 
   var donusBtn = document.getElementById('donus-btn');
   var donusYapildi = false;

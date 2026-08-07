@@ -1725,6 +1725,9 @@
     var donus = varis + adet * 15 / 60;
     var yuklemeS = saatVekil('yukleme', 7.5);
     var baslamaS = saatVekil('baslama', 8);
+    var evre = gunDurum && gunDurum.asama ? gunDurum.asama : null;
+    if (evre === 'yukleme') return { tip: 'yukleme', ilerleme: 0, tamam: 0, yolda: 'Depoda yükleme yapılıyor' };
+    if (evre === 'baslama') return { tip: 'yolda', ilerleme: Math.min(1, (t - baslamaS) / (varis - baslamaS) * 0.3), tamam: 0, yolda: 'Tokat → ' + sehir + ' · ' + ilKm[sehir] + ' km' };
     if (t < yuklemeS) return { tip: 'hazirlik', ilerleme: 0, tamam: 0, yolda: 'Depo yükleme saat ' + saatYaz(yuklemeS) + '’da başlayacak' };
     if (t < baslamaS) return { tip: 'yukleme', ilerleme: 0, tamam: 0, yolda: 'Depoda yükleme yapılıyor' };
     if (t < varis) return { tip: 'yolda', ilerleme: (t - baslamaS) / (varis - baslamaS) * 0.3, tamam: 0, yolda: 'Tokat → ' + sehir + ' · ' + ilKm[sehir] + ' km' };
