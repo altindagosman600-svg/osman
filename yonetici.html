@@ -53,6 +53,8 @@
   .magaza { background:#fff; border-radius:14px; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px; border:1px solid #e3eaf2; box-shadow:0 2px 8px rgba(14,27,44,.05); }
   .magaza .ad { font-weight:700; font-size:.92rem; }
   .magaza .saat { font-size:.75rem; color:#6b7f94; margin-top:2px; }
+  .magaza .son { font-size:.7rem; color:#9fb0c3; margin-top:2px; }
+  .magaza .son b { color:#8e44ad; }
   .rozet { border-radius:999px; padding:6px 14px; font-weight:800; font-size:.78rem; white-space:nowrap; }
   .rozet.bekliyor { background:#eef2f7; color:#6b7f94; }
   .rozet.teslim { background:#e8f5ec; color:var(--yesil); }
@@ -330,6 +332,38 @@
       }).catch(function () { });
   }
 
+  var sonZiyaretler = null;
+
+  function sonZiyaretGetir() {
+    return fetch(FIREBASE_URL + '/gunluk.json')
+      .then(function (r) { return r.json(); })
+      .then(function (veri) {
+        var map = {};
+        if (veri) {
+          var tarihler = Object.keys(veri).sort();
+          for (var t = 0; t < tarihler.length; t++) {
+            var tarih = tarihler[t];
+            var iller = veri[tarih];
+            if (!iller) continue;
+            for (var ilAd in iller) {
+              var kayitlar = iller[ilAd];
+              if (!kayitlar) continue;
+              for (var anahtar in kayitlar) {
+                var kayit = kayitlar[anahtar];
+                if (kayit && (kayit.saat || kayit.red)) {
+                  var k = normalize(ilAd) + '-' + anahtar;
+                  var zaman = tarih + ' ' + (kayit.saat || '00:00');
+                  if (!map[k] || zaman > map[k]) map[k] = zaman;
+                }
+              }
+            }
+          }
+        }
+        sonZiyaretler = map;
+        return map;
+      }).catch(function () { return sonZiyaretler || {}; });
+  }
+
   function yukle() {
     if (!secilenTarih) return;
     var magazalar = magazaListesiGetir();
@@ -448,8 +482,12 @@
         altSaat = alt || '';
         eksikler.push({ ad: ad, ilce: alt, marka: marka });
       }
+      var sonKayit = sonZiyaretler ? sonZiyaretler[anahtar] : null;
+      var sonYazi = sonKayit
+        ? '<div class="son">SON ZİYARET: <b>' + sonKayit.split(' ')[0].split('-').reverse().join('.') + ' ' + (sonKayit.split(' ')[1] || '') + '</b></div>'
+        : '<div class="son">HİÇ ZİYARET YOK</div>';
       html += '<div class="magaza">' +
-        '<div><div class="ad">' + ad + markaRozet + '</div><div class="saat">' + (altSaat || '') + '</div></div>' +
+        '<div><div class="ad">' + ad + markaRozet + '</div><div class="saat">' + (altSaat || '') + '</div>' + sonYazi + '</div>' +
         rozet +
         '</div>';
 
@@ -534,10 +572,12 @@
 
   function baslat() {
     secimKur();
+    sonZiyaretGetir().then(function () { yukle(); });
     yukle();
     yukleKonum();
     yukleRota();
     setInterval(function () { yukle(); yukleKonum(); yukleRota(); }, 5000);
+    setInterval(function () { sonZiyaretGetir().then(function () { yukle(); }); }, 60000);
   }
 
   document.getElementById('baslik-red').addEventListener('click', function () {
