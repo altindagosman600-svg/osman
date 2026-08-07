@@ -1556,18 +1556,18 @@
     if (d2 && d2.tip === 'donus') {
       document.getElementById('op-donus-saat').textContent = aktifDonus && aktifDonus.varisTahmini ? aktifDonus.varisTahmini : '—';
       var opDonusAlt = document.getElementById('op-donus-saat').parentElement.querySelector('span');
-      opDonusAlt.textContent = aktifDonus && aktifDonus.ilce ? 'Şoför depoya dönüyor · ' + aktifDonus.ilce : 'Şoför depoya dönüyor';
+      opDonusAlt.textContent = aktifDonus && aktifDonus.ilce ? 'Şoför depoya dönüyor · ' + ilceListesi(aktifDonus.ilce) : 'Şoför depoya dönüyor';
     } else if (aktifDonus && aktifDonus.varisTahmini) {
       document.getElementById('op-donus-saat').textContent = aktifDonus.varisTahmini;
       var opDonusAlt2 = document.getElementById('op-donus-saat').parentElement.querySelector('span');
-      opDonusAlt2.textContent = aktifDonus.ilce ? 'Şoför dönüşte · ' + aktifDonus.ilce : 'Şoför dönüşte';
+      opDonusAlt2.textContent = aktifDonus.ilce ? 'Şoför dönüşte · ' + ilceListesi(aktifDonus.ilce) : 'Şoför dönüşte';
     }
     document.getElementById('op-sayi').textContent = d2 ? gosterTamam(d2.tamam) + ' / ' + magazaSayisi(sehir2) : '—';
     var opSehirAd = document.getElementById('op-sehir-ad');
     var opSehirAlt = opSehirAd.parentElement.querySelector('span');
     if (aktifSecim) {
       opSehirAd.textContent = aktifSehir || '—';
-      opSehirAlt.textContent = aktifSecim.ilce ? 'Şoför seçimi · ' + aktifSecim.ilce : 'Şoförün seçtiği şehir';
+      opSehirAlt.textContent = aktifSecim.ilce ? 'Şoför seçimi · ' + ilceListesi(aktifSecim.ilce) : 'Şoförün seçtiği şehir';
     } else {
       opSehirAd.textContent = sehir2 ? sehir2 : '—';
       opSehirAlt.textContent = 'Bugünkü şehir';
@@ -1690,15 +1690,19 @@
       })
       .catch(function () { firebaseTamam = -1; canliGuncelle(); opPanelGuncelle(); });
   }
+  function ilceListesi(v) {
+    if (!v) return '';
+    return Array.isArray(v) ? v.join(', ') : String(v);
+  }
   function magazaSayisi(sehirAd) {
     var il = ilBul(sehirAd);
     if (!il) return 0;
-    var ilceF = aktifSecim && aktifSecim.ilce ? aktifSecim.ilce : null;
+    var ilceF = aktifSecim && aktifSecim.ilce ? (Array.isArray(aktifSecim.ilce) ? aktifSecim.ilce : [aktifSecim.ilce]) : [];
     var tipF = aktifSecim && aktifSecim.tip && aktifSecim.tip !== 'TUMU' ? aktifSecim.tip : null;
     var s = 0;
     for (var m = 0; m < il.magazalar.length; m++) {
       var mag = il.magazalar[m];
-      if (ilceF && mag.i !== ilceF) continue;
+      if (ilceF.length && ilceF.indexOf(mag.i) === -1) continue;
       if (tipF && (mag.t || 'S') !== tipF) continue;
       s++;
     }

@@ -55,6 +55,10 @@
   .secici-kap { background:#fff; padding:12px 16px; border-bottom:1px solid #e3eaf2; display:grid; gap:8px; }
   .secici-kap select { width:100%; padding:12px; font-size:.92rem; font-weight:700; border:2px solid #e3eaf2; border-radius:10px; outline:none; background:#fbfdff; color:#33465c; -webkit-appearance:none; appearance:none; }
   .secici-kap select:focus { border-color:var(--turuncu); }
+  .ilce-kap { display:flex; flex-wrap:wrap; gap:6px; max-height:132px; overflow:auto; border:2px solid #e3eaf2; border-radius:10px; padding:8px; background:#fbfdff; }
+  .ilce-kap .ilce-bos { font-size:.8rem; color:#9ab0c6; font-weight:700; padding:4px; width:100%; text-align:center; }
+  .ilce-kip { border:2px solid #e3eaf2; background:#fff; border-radius:999px; padding:7px 12px; font-size:.75rem; font-weight:800; cursor:pointer; color:#6b7f94; }
+  .ilce-kap .ilce-kip.aktif { border-color:var(--turuncu); background:linear-gradient(135deg,#f77f00,#d96b00); color:#fff; box-shadow:0 3px 10px rgba(247,127,0,.3); }
   .tip-kap { display:flex; gap:6px; }
   .tip-kap button { flex:1; border:2px solid #e3eaf2; background:#fff; border-radius:999px; padding:9px 4px; font-size:.7rem; font-weight:800; cursor:pointer; color:#6b7f94; }
   .tip-kap button.aktif { border-color:var(--turuncu); background:linear-gradient(135deg,#f77f00,#d96b00); color:#fff; box-shadow:0 3px 10px rgba(247,127,0,.3); }
@@ -83,7 +87,7 @@
 <div style="display:none;" id="panel">
   <div class="secici-kap">
     <select id="il-sec"><option value="">İL SEÇİN...</option></select>
-    <select id="ilce-sec"><option value="">ÖNCE İL SEÇİN</option></select>
+    <div class="ilce-kap" id="ilce-kap"><span class="ilce-bos">ÖNCE İL SEÇİN</span></div>
     <div class="tip-kap">
       <button data-tip="TUMU" class="aktif">TÜMÜ</button>
       <button data-tip="S">ŞOK</button>
@@ -154,12 +158,12 @@
 
   var sehir = '';
   var seciliIl = '';
-  var seciliIlce = '';
+  var seciliIlceler = [];
   var seciliTip = 'TUMU';
   sehirEl.textContent = 'İl seçin';
 
   var ilSecEl = document.getElementById('il-sec');
-  var ilceSecEl = document.getElementById('ilce-sec');
+  var ilceKapEl = document.getElementById('ilce-kap');
   var TIP_AD = { S: 'ŞOK', T: 'TARIM KREDİ', D: 'DİĞER' };
 
   function ilDoldur() {
@@ -179,14 +183,17 @@
       }
     }
     ilceler.sort();
-    var html = '<option value="">TÜM İLÇELER</option>';
-    for (var j = 0; j < ilceler.length; j++) html += '<option value="' + ilceler[j] + '">' + ilceler[j] + '</option>';
-    ilceSecEl.innerHTML = html;
-    ilceSecEl.disabled = false;
+    if (!ilceler.length) { ilceKapEl.innerHTML = '<span class="ilce-bos">ÖNCE İL SEÇİN</span>'; return; }
+    var html = '<button class="ilce-kip' + (seciliIlceler.length ? '' : ' aktif') + '" data-ilce="">TÜM İLÇELER</button>';
+    for (var j = 0; j < ilceler.length; j++) {
+      var on = seciliIlceler.indexOf(ilceler[j]) !== -1;
+      html += '<button class="ilce-kip' + (on ? ' aktif' : '') + '" data-ilce="' + ilceler[j] + '">' + ilceler[j] + '</button>';
+    }
+    ilceKapEl.innerHTML = html;
   }
   ilSecEl.addEventListener('change', function () {
     seciliIl = ilSecEl.value;
-    seciliIlce = '';
+    seciliIlceler = [];
     sehir = seciliIl;
     sehirEl.textContent = seciliIl || 'İl seçin';
     document.getElementById('baslik-alt').style.display = seciliIl ? '' : 'none';
@@ -197,8 +204,18 @@
     donusBtn.textContent = '🔄 DÖNÜŞE GEÇ';
     donusBtn.style.background = '';
   });
-  ilceSecEl.addEventListener('change', function () {
-    seciliIlce = ilceSecEl.value;
+  ilceKapEl.addEventListener('click', function (e) {
+    var b = e.target.closest('button');
+    if (!b || !b.hasAttribute('data-ilce')) return;
+    var ilce = b.getAttribute('data-ilce');
+    if (ilce === '') {
+      seciliIlceler = [];
+    } else {
+      var idx = seciliIlceler.indexOf(ilce);
+      if (idx === -1) seciliIlceler.push(ilce); else seciliIlceler.splice(idx, 1);
+      if (seciliIlceler.length === ilceKapEl.querySelectorAll('button').length - 1) seciliIlceler = [];
+    }
+    ilceDoldur();
     listeCiz();
     secimKaydet();
   });
@@ -367,7 +384,7 @@
       if (seciliIl && il.sehir !== seciliIl) continue;
       for (var i = 0; i < il.magazalar.length; i++) {
         var m = il.magazalar[i];
-        if (seciliIlce && m.i !== seciliIlce) continue;
+        if (seciliIlceler.length && seciliIlceler.indexOf(m.i) === -1) continue;
         if (seciliTip !== 'TUMU' && (m.t || 'S') !== seciliTip) continue;
         sonuc.push({ ilAd: il.sehir, magaza: m, sira: i + 1 });
       }
@@ -423,7 +440,7 @@
     var adres = FIREBASE_URL + '/secim/' + tarihYaz(new Date()) + '.json';
     fetch(adres, {
       method: 'PUT',
-      body: JSON.stringify({ il: seciliIl, ilce: seciliIlce, tip: seciliTip })
+      body: JSON.stringify({ il: seciliIl, ilce: seciliIlceler, tip: seciliTip })
     }).catch(function () {});
   }
 
@@ -535,7 +552,7 @@
     baglanti.textContent = 'Dönüş başladı — depoya tahmini varış ' + hesap.saat;
     fetch(FIREBASE_URL + '/donus/' + tarihYaz(new Date()) + '.json', {
       method: 'PUT',
-      body: JSON.stringify({ il: seciliIl, ilce: seciliIlce, baslangic: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }), varisTahmini: hesap.saat, ts: Date.now() })
+      body: JSON.stringify({ il: seciliIl, ilce: seciliIlceler, baslangic: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }), varisTahmini: hesap.saat, ts: Date.now() })
     }).catch(function () {});
     fetch(FIREBASE_URL + '/durum/' + tarihYaz(new Date()) + '.json', {
       method: 'PATCH',
