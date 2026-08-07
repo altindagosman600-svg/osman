@@ -1552,11 +1552,15 @@
     opSatir('op-yol', d2 && d2.tip === 'yolda');
     opSatir('op-teslim', d2 && d2.tip === 'teslimat');
     opSatir('op-sehir', d2 && d2.tip === 'teslimat');
-    opSatir('op-donus', !!(aktifDonus && aktifDonus.il));
-    if (aktifDonus && aktifDonus.varisTahmini) {
-      document.getElementById('op-donus-saat').textContent = aktifDonus.varisTahmini;
+    opSatir('op-donus', d2 && d2.tip === 'donus');
+    if (d2 && d2.tip === 'donus') {
+      document.getElementById('op-donus-saat').textContent = aktifDonus && aktifDonus.varisTahmini ? aktifDonus.varisTahmini : '—';
       var opDonusAlt = document.getElementById('op-donus-saat').parentElement.querySelector('span');
-      opDonusAlt.textContent = aktifDonus.ilce ? 'Şoför dönüşte · ' + aktifDonus.ilce : 'Şoför dönüşte';
+      opDonusAlt.textContent = aktifDonus && aktifDonus.ilce ? 'Şoför depoya dönüyor · ' + aktifDonus.ilce : 'Şoför depoya dönüyor';
+    } else if (aktifDonus && aktifDonus.varisTahmini) {
+      document.getElementById('op-donus-saat').textContent = aktifDonus.varisTahmini;
+      var opDonusAlt2 = document.getElementById('op-donus-saat').parentElement.querySelector('span');
+      opDonusAlt2.textContent = aktifDonus.ilce ? 'Şoför dönüşte · ' + aktifDonus.ilce : 'Şoför dönüşte';
     }
     document.getElementById('op-sayi').textContent = d2 ? gosterTamam(d2.tamam) + ' / ' + magazaSayisi(sehir2) : '—';
     var opSehirAd = document.getElementById('op-sehir-ad');
@@ -1575,9 +1579,9 @@
     }
     document.getElementById('ops-yuzde').textContent = '%' + yuzde;
     document.getElementById('ops-bar').style.width = yuzde + '%';
-    document.getElementById('ops-teslim2').textContent = d2 ? gosterTamam(d2.tamam) + ' / ' + magazaSayisi(sehir2) : '0 / ' + (sehir2 ? magazaSayisi(sehir2) : '30');
+    document.getElementById('ops-teslim2').textContent = d2 && d2.tip !== 'bekleme' ? gosterTamam(d2.tamam) + ' / ' + magazaSayisi(sehir2) : '0 / ' + (sehir2 ? magazaSayisi(sehir2) : '30');
     document.getElementById('ops-aktif').textContent = sehir2 ? sehir2 : '—';
-    document.getElementById('ops-ara').textContent = sehir2 ? '1' : '0';
+    document.getElementById('ops-ara').textContent = sehir2 && d2 && d2.tip !== 'bekleme' ? '1' : '0';
   }
 
   urunleriDoldur();
