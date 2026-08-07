@@ -431,14 +431,14 @@
           altSaat = 'Teslim: ' + d.saat;
           var urunVeri = d.urunler || {};
           var kayitMarka = d.marka || marka;
-          var liste = kayitMarka === 'BAGETTA' ? BAGETTA_URUNLER : URUNLER;
+          var urunListesi = kayitMarka === 'BAGETTA' ? BAGETTA_URUNLER : URUNLER;
           var hedefToplam = kayitMarka === 'BAGETTA' ? bagetToplam : tamkoyToplam;
           var urunYazi = [];
-          for (var u = 0; u < liste.length; u++) {
-            var deger = urunVeri[liste[u].sutun];
+          for (var u = 0; u < urunListesi.length; u++) {
+            var deger = urunVeri[urunListesi[u].sutun];
             if (deger && deger > 0) {
-              urunYazi.push(liste[u].ad + ': ' + deger);
-              hedefToplam[liste[u].ad] = (hedefToplam[liste[u].ad] || 0) + deger;
+              urunYazi.push(urunListesi[u].ad + ': ' + deger);
+              hedefToplam[urunListesi[u].ad] = (hedefToplam[urunListesi[u].ad] || 0) + deger;
             }
           }
           if (urunYazi.length) altSaat += ' — ' + urunYazi.join(', ');
