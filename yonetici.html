@@ -266,7 +266,10 @@
     }
     try {
       harita = L.map('harita').setView([40.5, 36.5], 7);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(harita);
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+        attribution: '&copy; Esri, OpenStreetMap',
+        maxZoom: 19
+      }).addTo(harita);
     } catch (e) { setTimeout(haritaKur, 2000); }
   }
   haritaKur();
@@ -306,7 +309,9 @@
             harita.setView(nokta, 13);
           } else {
             aracMarker.setLatLng(nokta);
-            if (m !== null && m > 0.01) harita.panTo(nokta);
+            if (!harita.getBounds().contains(L.latLng(nokta[0], nokta[1]))) {
+              harita.panTo(nokta);
+            }
           }
         }
       }).catch(function () {
@@ -505,6 +510,10 @@
       }
     }
 
+    for (var t = 0; t < magazaMarkers.length; t++) {
+      if (harita) harita.removeLayer(magazaMarkers[t]);
+    }
+    magazaMarkers = [];
     liste.innerHTML = html;
     var tamam = 0, red = 0;
     for (var k in durumlar) {
