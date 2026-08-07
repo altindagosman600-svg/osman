@@ -95,9 +95,15 @@
     <div><span>Bölgedeki mağaza</span><br><b id="ozet-sayi">0</b></div>
     <div style="text-align:right;"><span>Bugün teslim edilen</span><br><b id="ozet-tamam">0</b></div>
   </div>
-  <div style="padding:10px 16px; background:#fff; border-bottom:1px solid #e3eaf2; display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
-    <button class="btn teslim" id="donus-btn" style="text-decoration:none; padding:9px 14px; font-size:.78rem; flex:1;">🔄 DÖNÜŞE GEÇ</button>
-    <a class="btn teslim" id="depo-btn" href="tel:+905375966856" style="text-decoration:none; padding:9px 14px; font-size:.78rem;">📞 BÜYÜK PATRONU ARA</a>
+  <div style="padding:10px 16px; background:#fff; border-bottom:1px solid #e3eaf2; display:grid; gap:8px;">
+    <div style="display:flex; gap:8px;">
+      <button class="btn teslim" id="yukleme-btn" style="padding:11px 10px; font-size:.78rem; flex:1;">📦 DEPO YÜKLEME</button>
+      <button class="btn teslim" id="baslama-btn" style="padding:11px 10px; font-size:.78rem; flex:1;">🚚 İŞE BAŞLA</button>
+    </div>
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+      <button class="btn teslim" id="donus-btn" style="text-decoration:none; padding:9px 14px; font-size:.78rem; flex:1;">🔄 DÖNÜŞE GEÇ</button>
+      <a class="btn teslim" id="depo-btn" href="tel:+905375966856" style="text-decoration:none; padding:9px 14px; font-size:.78rem;">📞 BÜYÜK PATRONU ARA</a>
+    </div>
   </div>
   <div class="liste" id="liste"></div>
   <div style="padding:0 16px 8px;"><button class="btn teslim" id="test-btn" style="width:100%;">TEST BİLDİRİMİ GÖNDER</button></div>
@@ -246,6 +252,7 @@
   });
 
   var durumlar = {};
+  var gunDurum = {};
   var sonZiyaretler = {};
   var ilKm = { SAMSUN: 150, SİNOP: 220, AMASYA: 90, ÇORUM: 180, SİVAS: 95, TOKAT: 140, YOZGAT: 160, GİRESUN: 230, KAYSERİ: 220 };
   var ortalamaHiz = 85;
@@ -466,6 +473,47 @@
     }
   });
 
+  var yuklemeBtn = document.getElementById('yukleme-btn');
+  var baslamaBtn = document.getElementById('baslama-btn');
+  function durumOku() {
+    fetch(FIREBASE_URL + '/durum/' + tarihYaz(new Date()) + '.json')
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d && (d.yukleme || d.baslama)) gunDurum = d;
+        else gunDurum = {};
+        durumButonYansit();
+      }).catch(function () { gunDurum = {}; });
+  }
+  function durumButonYansit() {
+    if (gunDurum.yukleme) {
+      yuklemeBtn.textContent = '✓ YÜKLEME ' + gunDurum.yukleme;
+      yuklemeBtn.classList.add('tamam');
+    } else {
+      yuklemeBtn.textContent = '📦 DEPO YÜKLEME';
+      yuklemeBtn.classList.remove('tamam');
+    }
+    if (gunDurum.baslama) {
+      baslamaBtn.textContent = '✓ İŞ BAŞI ' + gunDurum.baslama;
+      baslamaBtn.classList.add('tamam');
+    } else {
+      baslamaBtn.textContent = '🚚 İŞE BAŞLA';
+      baslamaBtn.classList.remove('tamam');
+    }
+  }
+  function durumDamga(yuklemeMi) {
+    var saat = new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+    var adres = FIREBASE_URL + '/durum/' + tarihYaz(new Date()) + '.json';
+    var veri = {};
+    if (yuklemeMi) { gunDurum.yukleme = saat; veri.yukleme = saat; }
+    else { gunDurum.baslama = saat; veri.baslama = saat; }
+    fetch(adres, { method: 'PATCH', body: JSON.stringify(veri) })
+      .then(function () { durumButonYansit(); baglanti.textContent = 'Gün durumu kaydedildi — ' + saat; })
+      .catch(function () { baglanti.textContent = 'Bağlantı hatası — kaydedilemedi'; });
+    durumButonYansit();
+  }
+  yuklemeBtn.addEventListener('click', function () { durumDamga(true); });
+  baslamaBtn.addEventListener('click', function () { durumDamga(false); });
+
   var donusBtn = document.getElementById('donus-btn');
   var donusYapildi = false;
   donusBtn.addEventListener('click', function () {
@@ -526,6 +574,7 @@
       if (d) sonZiyaretler = d;
       listeCiz();
     }).catch(function () { });
+    durumOku();
   }
 
   function baslat() {
