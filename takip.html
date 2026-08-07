@@ -53,6 +53,7 @@
     return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
   }
   function bugunkuSehir() { return HAFTA[new Date().getDay()]; }
+  function normalize(s) { return String(s || '').toUpperCase().replace('İ', 'I').trim(); }
 
   var harita = L.map('harita').setView([40.5, 36.5], 7);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -78,7 +79,7 @@
 
   function yukleGunluk() {
     if (!aktifSehir) { document.getElementById('pb-teslim').textContent = '0 / 30'; return; }
-    fetch(FIREBASE_URL + '/gunluk/' + tarihYaz(new Date()) + '/' + aktifSehir + '.json')
+    fetch(FIREBASE_URL + '/gunluk/' + tarihYaz(new Date()) + '/' + normalize(aktifSehir) + '.json')
       .then(function (r) { return r.json(); })
       .then(function (d) {
         var sayi = 0;

@@ -243,20 +243,35 @@
   });
 
   function girisYap() {
-    if (pinEl.value.trim() === PIN) {
-      localStorage.setItem('sofor-pin', 'ok');
-      hata.textContent = '';
-      girisKap.style.display = 'none';
-      panel.style.display = '';
-      cikisBtn.style.display = '';
-      baslat();
-      bildirimIzinIste();
-      konumBaslat();
-    } else {
-      hata.textContent = 'Yanlış şifre';
-      pinEl.value = '';
-      pinEl.focus();
+    var girilen = pinEl.value.trim();
+    if (girilen === PIN) {
+      girisKabul();
+      return;
     }
+    fetch(FIREBASE_URL + '/ayar/soforPin.json')
+      .then(function (r) { return r.json(); })
+      .then(function (dp) {
+        if (dp && String(dp) === girilen) {
+          girisKabul();
+        } else {
+          hata.textContent = 'Yanlış şifre';
+          pinEl.value = '';
+          pinEl.focus();
+        }
+      })
+      .catch(function () {
+        hata.textContent = 'Bağlantı hatası — tekrar deneyin';
+      });
+  }
+  function girisKabul() {
+    localStorage.setItem('sofor-pin', 'ok');
+    hata.textContent = '';
+    girisKap.style.display = 'none';
+    panel.style.display = '';
+    cikisBtn.style.display = '';
+    baslat();
+    bildirimIzinIste();
+    konumBaslat();
   }
   document.getElementById('giris-btn').addEventListener('click', girisYap);
   pinEl.addEventListener('keydown', function (e) { if (e.key === 'Enter') girisYap(); });
