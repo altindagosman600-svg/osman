@@ -1692,15 +1692,17 @@
   }
   function magazaSayisi(sehirAd) {
     var il = ilBul(sehirAd);
-    if (!il) return 30;
-    if (aktifSecim && aktifSecim.ilce) {
-      var s = 0;
-      for (var m = 0; m < il.magazalar.length; m++) {
-        if (il.magazalar[m].i === aktifSecim.ilce) s++;
-      }
-      return s;
+    if (!il) return 0;
+    var ilceF = aktifSecim && aktifSecim.ilce ? aktifSecim.ilce : null;
+    var tipF = aktifSecim && aktifSecim.tip && aktifSecim.tip !== 'TUMU' ? aktifSecim.tip : null;
+    var s = 0;
+    for (var m = 0; m < il.magazalar.length; m++) {
+      var mag = il.magazalar[m];
+      if (ilceF && mag.i !== ilceF) continue;
+      if (tipF && (mag.t || 'S') !== tipF) continue;
+      s++;
     }
-    return il.magazalar.length;
+    return s;
   }
   function gosterTamam(sayi) {
     return firebaseTamam >= 0 ? firebaseTamam : sayi;

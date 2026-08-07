@@ -423,7 +423,7 @@
     var adres = FIREBASE_URL + '/secim/' + tarihYaz(new Date()) + '.json';
     fetch(adres, {
       method: 'PUT',
-      body: JSON.stringify({ il: seciliIl, ilce: seciliIlce })
+      body: JSON.stringify({ il: seciliIl, ilce: seciliIlce, tip: seciliTip })
     }).catch(function () {});
   }
 
