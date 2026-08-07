@@ -151,6 +151,7 @@
   }
 </script>
 <script src="magazalar.js"></script>
+<script src="koordinatlar.js"></script>
 <script>
 
   function normalize(s) { return s.toUpperCase().replace('İ', 'I'); }
@@ -395,6 +396,13 @@
     return p[2] + '.' + p[1] + '.' + p[0];
   }
 
+  function magazaKoordinat(sehir, ilce) {
+    var s = KOORDINATLAR[sehir];
+    if (!s) return null;
+    var k = s[ilce] || s['_merkez'];
+    return k || null;
+  }
+
   function filtreliMagazalar() {
     var sonuc = [];
     for (var l = 0; l < MAGAZALAR.length; l++) {
@@ -434,17 +442,21 @@
         var alt = (ziyaret ? 'Son uğrama: ' + tarihKisa(ziyaret.tarih) + ' · ' : 'İlk ziyaret · ') + m.i;
         var tip = m.t || 'S';
         var rozet = '<span class="rozet ' + (tip === 'T' ? 'tk' : tip === 'D' ? 'dig' : 'sok') + '">' + TIP_AD[tip] + '</span>';
+        var koord = magazaKoordinat(grup[i].ilAd, m.i);
+        var navBtn = koord
+          ? '<a class="btn nav" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=' + koord[0] + ',' + koord[1] + '" title="Navigasyonu aç" style="text-decoration:none; background:#eef2f7; color:#1d6fa5; padding:11px 12px;">📍</a>'
+          : '';
         html += '<div class="magaza">' +
           '<div><div class="ad">' + m.m + rozet + '</div>' +
           '<div class="saat">' + (d ? (d.red ? '✗ ' + d.red : 'Teslim: ' + d.saat) + ' · ' + alt : alt) + '</div></div>' +
+          '<div style="display:flex;gap:6px;align-items:center;">' + navBtn +
           (d
             ? (d.red
               ? '<button class="btn geri-al" data-geri="' + m.k + '" style="background:#fdecea;color:#c0392b;">✗ ' + d.red + '</button>'
               : '<button class="btn tamam" data-geri="' + m.k + '">✓ Teslim Edildi</button>')
-            : '<div style="display:flex;gap:6px;">' +
-              '<button class="btn teslim" data-no="' + m.k + '">✓</button>' +
-              '<button class="btn red" data-red="' + m.k + '" style="background:#fdecea;color:#c0392b;padding:11px 10px;">✗</button>' +
-              '</div>') +
+            : '<button class="btn teslim" data-no="' + m.k + '">✓</button>' +
+              '<button class="btn red" data-red="' + m.k + '" style="background:#fdecea;color:#c0392b;padding:11px 10px;">✗</button>') +
+          '</div>' +
           '</div>';
       }
     }
