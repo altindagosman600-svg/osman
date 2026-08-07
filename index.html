@@ -926,11 +926,11 @@
         <div class="oper-baslik">BUGÜNKÜ OPERASYON</div>
         <div class="oper-satir" id="op-yukleme">
           <span class="ikon">📍</span>
-          <div class="sol"><b>TOKAT</b><span id="op-yukleme-alt">Yükleme Başladı · <span id="op-yukleme-saat">08:00</span></span></div>
+          <div class="sol"><b>TOKAT</b><span id="op-yukleme-alt">Yükleme Başladı · <span id="op-yukleme-saat">—</span></span></div>
         </div>
         <div class="oper-satir" id="op-yol">
           <span class="ikon">🚚</span>
-          <div class="sol"><b>Yola Çıktı</b><span>Tokat Merkez</span></div>
+          <div class="sol"><b>Yola Çıktı</b><span id="op-yol-alt">—</span></div>
         </div>
         <div class="oper-satir" id="op-teslim">
           <span class="ikon">📦</span>
@@ -938,15 +938,15 @@
         </div>
         <div class="oper-satir" id="op-sehir">
           <span class="ikon">📍</span>
-          <div class="sol"><b id="op-sehir-ad">SAMSUN</b><span>Bugünkü şehir</span></div>
+          <div class="sol"><b id="op-sehir-ad">—</b><span>Bugünkü şehir</span></div>
         </div>
         <div class="oper-satir" id="op-varis">
           <span class="ikon">🕒</span>
-          <div class="sol"><b id="op-varis-saat">16:30</b><span>Tahmini varış</span></div>
+          <div class="sol"><b id="op-varis-saat">—</b><span id="op-varis-alt">Varış</span></div>
         </div>
         <div class="oper-satir" id="op-donus">
           <span class="ikon">🔙</span>
-          <div class="sol"><b id="op-donus-saat">—</b><span>Tahmini dönüş</span></div>
+          <div class="sol"><b id="op-donus-saat">—</b><span id="op-donus-alt">Dönüş</span></div>
         </div>
       </div>
       <div class="oper-kutular">
@@ -969,23 +969,23 @@
     <div class="rota">
       <div class="rota-cizgi"></div>
       <div class="durak durak-1">
-        <div><b>DEPO YÜKLEME</b><br><span style="font-size:.78rem;opacity:.8;">Tokat Merkez · <span id="rota-yukleme">07:30</span></span></div>
+        <div><b>DEPO YÜKLEME</b><br><span style="font-size:.78rem;opacity:.8;">Tokat Merkez · <span id="rota-yukleme">—</span></span></div>
         <span class="durum">Bekliyor</span>
       </div>
       <div class="durak durak-2">
-        <div><b>YOLA ÇIKIŞ</b><br><span style="font-size:.78rem;opacity:.8;">Tokat Merkez · <span id="rota-baslama">08:00</span></span></div>
+        <div><b>YOLA ÇIKIŞ</b><br><span style="font-size:.78rem;opacity:.8;">Tokat Merkez · <span id="rota-baslama">—</span></span></div>
         <span class="durum">Bekliyor</span>
       </div>
         <div class="durak durak-3">
-        <div><b>YOLDA</b><br><span style="font-size:.78rem;opacity:.8;">Tokat → <span id="rota-sehir">SAMSUN</span> · Varış <span id="rota-varis">11:00</span></span></div>
+        <div><b>YOLDA</b><br><span style="font-size:.78rem;opacity:.8;">Tokat → <span id="rota-sehir">—</span> · Varış <span id="rota-varis">—</span></span></div>
         <span class="durum">Bekliyor</span>
       </div>
       <div class="durak durak-4">
-        <div><b>DAĞITIMDA</b><br><span style="font-size:.78rem;opacity:.8;"><span id="rota-sehir2">SAMSUN</span> içinde · <span id="rota-adet">30 mağaza</span> · <span id="rota-aralik">11:00–17:00</span></span></div>
+        <div><b>DAĞITIMDA</b><br><span style="font-size:.78rem;opacity:.8;"><span id="rota-sehir2">—</span> içinde · <span id="rota-adet">—</span> · <span id="rota-aralik">—</span></span></div>
         <span class="durum">Bekliyor</span>
       </div>
       <div class="durak durak-5">
-        <div><b>DÖNÜŞ</b><br><span style="font-size:.78rem;opacity:.8;"><span id="rota-sehir3">SAMSUN</span> → Tokat · <span id="rota-donus">17:00</span></span></div>
+        <div><b>DÖNÜŞ</b><br><span style="font-size:.78rem;opacity:.8;"><span id="rota-sehir3">—</span> → Tokat · <span id="rota-donus">—</span></span></div>
         <span class="durum">Bekliyor</span>
       </div>
     </div>
@@ -994,10 +994,10 @@
       <h3 id="canli-baslik">Bugünkü Rota</h3>
       <div class="kayit"><span>Son güncelleme</span><b id="canli-saat">—</b></div>
       <div class="kayit"><span>Bugünkü şehir</span><b id="canli-sehir">—</b></div>
-      <div class="kayit"><span>Çıkış noktası</span><b id="canli-cikis">Tokat Merkez — DEPO YÜKLEME 07:30<br>Tokat Merkez — ÇIKIŞ 08:00</b></div>
-      <div class="kayit"><span>Tahmini varış</span><b id="canli-varis">11:00</b></div>
+      <div class="kayit"><span>Çıkış noktası</span><b id="canli-cikis">—</b></div>
+      <div class="kayit"><span>İlk teslim</span><b id="canli-varis">—</b></div>
       <div class="kayit"><span>Teslim edilen mağaza</span><b id="canli-tamam">0 / 0 mağaza</b></div>
-      <div class="kayit"><span>Durum</span><b id="canli-yolda">Depo yükleme yapılıyor</b></div>
+      <div class="kayit"><span>Durum</span><b id="canli-yolda">—</b></div>
     </div>
   </div>
 </section>
@@ -1541,28 +1541,34 @@
 
   function opSatir(id, aktif) {
     var s = document.getElementById(id);
-    if (s) s.classList.toggle('aktif', aktif);
+    if (s) {
+      s.classList.toggle('aktif', aktif);
+      s.style.display = aktif ? '' : 'none';
+    }
   }
   function opPanelGuncelle() {
     var sehir2 = aktifSehir;
+    var adet2 = sehir2 ? magazaSayisi(sehir2) : 0;
     var d2 = sehir2 ? canliDurum(new Date().getHours() + new Date().getMinutes() / 60, sehir2) : null;
-    opSatir('op-yukleme', d2 && d2.tip === 'yukleme');
-    var opYuklemeSaat = document.getElementById('op-yukleme-saat');
-    if (opYuklemeSaat) opYuklemeSaat.textContent = gunDurum.yukleme ? gunDurum.yukleme : '—';
-    opSatir('op-yol', d2 && d2.tip === 'yolda');
-    opSatir('op-teslim', d2 && d2.tip === 'teslimat');
-    opSatir('op-sehir', d2 && d2.tip === 'teslimat');
-    opSatir('op-donus', d2 && d2.tip === 'donus');
-    if (d2 && d2.tip === 'donus') {
-      document.getElementById('op-donus-saat').textContent = aktifDonus && aktifDonus.varisTahmini ? aktifDonus.varisTahmini : '—';
-      var opDonusAlt = document.getElementById('op-donus-saat').parentElement.querySelector('span');
-      opDonusAlt.textContent = aktifDonus && aktifDonus.ilce ? 'Şoför depoya dönüyor · ' + ilceListesi(aktifDonus.ilce) : 'Şoför depoya dönüyor';
-    } else if (aktifDonus && aktifDonus.varisTahmini) {
-      document.getElementById('op-donus-saat').textContent = aktifDonus.varisTahmini;
-      var opDonusAlt2 = document.getElementById('op-donus-saat').parentElement.querySelector('span');
-      opDonusAlt2.textContent = aktifDonus.ilce ? 'Şoför dönüşte · ' + ilceListesi(aktifDonus.ilce) : 'Şoför dönüşte';
+
+    var yuklemeVar = !!gunDurum.yukleme;
+    opSatir('op-yukleme', yuklemeVar);
+    var opYuklemeAlt = document.getElementById('op-yukleme-alt');
+    if (opYuklemeAlt) {
+      opYuklemeAlt.innerHTML = gunDurum.baslama ? 'Yükleme tamam · Çıkış ' + gunDurum.baslama : 'Yükleme Başladı · <span id="op-yukleme-saat">' + (gunDurum.yukleme || '—') + '</span>';
     }
-    document.getElementById('op-sayi').textContent = d2 ? gosterTamam(d2.tamam) + ' / ' + magazaSayisi(sehir2) : '—';
+
+    var yolVar = !!gunDurum.baslama;
+    opSatir('op-yol', yolVar);
+    var opYolAlt = document.getElementById('op-yol-alt');
+    if (opYolAlt) opYolAlt.textContent = sehir2 ? sehir2 + ' yönünde' : '—';
+
+    var teslimVar = firebaseTamam > 0;
+    opSatir('op-teslim', teslimVar);
+    document.getElementById('op-sayi').textContent = teslimVar ? firebaseTamam + ' / ' + adet2 : '0 / ' + (adet2 || 0);
+
+    var sehirVar = !!aktifSecim;
+    opSatir('op-sehir', sehirVar);
     var opSehirAd = document.getElementById('op-sehir-ad');
     var opSehirAlt = opSehirAd.parentElement.querySelector('span');
     if (aktifSecim) {
@@ -1572,14 +1578,27 @@
       opSehirAd.textContent = '—';
       opSehirAlt.textContent = 'Şoför henüz seçim yapmadı';
     }
+
+    var varisVar = !!aktifVarisSaat;
+    opSatir('op-varis', varisVar);
+    document.getElementById('op-varis-saat').textContent = aktifVarisSaat ? aktifVarisSaat : '—';
+    var opVarisAlt = document.getElementById('op-varis-alt');
+    if (opVarisAlt) opVarisAlt.textContent = 'İlk teslim saati';
+
+    var donusVar = !!aktifDonus;
+    opSatir('op-donus', donusVar);
+    document.getElementById('op-donus-saat').textContent = aktifDonus && aktifDonus.varisTahmini ? aktifDonus.varisTahmini : '—';
+    var opDonusAlt = document.getElementById('op-donus-alt');
+    if (opDonusAlt) opDonusAlt.textContent = aktifDonus && aktifDonus.ilce ? 'Şoför dönüşte · ' + ilceListesi(aktifDonus.ilce) : (aktifDonus ? 'Şoför dönüşte' : 'Depoya dönüş');
+
     var yuzde = 0;
     if (d2) {
       if (d2.tip === 'tamam') yuzde = 100;
-      else if (d2.tip === 'teslimat') yuzde = Math.round(gosterTamam(d2.tamam) / magazaSayisi(sehir2) * 100);
+      else if (d2.tip === 'teslimat') yuzde = Math.round(gosterTamam(d2.tamam) / (adet2 || 1) * 100);
     }
     document.getElementById('ops-yuzde').textContent = '%' + yuzde;
     document.getElementById('ops-bar').style.width = yuzde + '%';
-    document.getElementById('ops-teslim2').textContent = d2 && d2.tip !== 'bekleme' ? gosterTamam(d2.tamam) + ' / ' + magazaSayisi(sehir2) : '0 / ' + (sehir2 ? magazaSayisi(sehir2) : '30');
+    document.getElementById('ops-teslim2').textContent = d2 && d2.tip !== 'bekleme' ? gosterTamam(d2.tamam) + ' / ' + adet2 : '0 / ' + (adet2 || 0);
     document.getElementById('ops-aktif').textContent = sehir2 ? sehir2 : '—';
     document.getElementById('ops-ara').textContent = sehir2 && d2 && d2.tip !== 'bekleme' ? '1' : '0';
   }
