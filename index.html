@@ -303,7 +303,7 @@
   .oper-dunya { position: absolute; inset: 0; pointer-events: none; opacity: .05; }
   .oper-dunya svg { width: 100%; height: 100%; }
   .oper-kap { position: relative; z-index: 2; }
-  .oper-grid { display: grid; grid-template-columns: 65fr 35fr; gap: 26px; align-items: stretch; margin-top: 6px; }
+  .oper-grid { display: grid; grid-template-columns: 73fr 27fr; gap: 26px; align-items: stretch; margin-top: 6px; }
   .harita-buyuk {
     border-radius: 24px; border: 1px solid rgba(255, 255, 255, .1);
     background: rgba(9, 18, 32, .65);
@@ -911,14 +911,14 @@
           <div class="kutu" style="right:7%; top:20%; width:26px; height:26px; animation-delay:3.1s;"></div>
           <div class="kutu" style="right:13%; bottom:10%; width:30px; height:30px; animation-delay:4.4s;"></div>
         </div>
-        <svg id="ops-harita" viewBox="0 0 900 650" aria-label="Operasyon merkezi dağıtım ağı haritası"></svg>
+        <svg id="ops-harita" viewBox="0 0 1200 700" aria-label="Operasyon merkezi dağıtım ağı haritası"></svg>
         <div class="canli-bar">
           <div class="ust"><span>Bugünkü teslimat</span><b id="ops-yuzde">%0</b></div>
           <div class="bar-yol"><div class="bar-dolgu" id="ops-bar"></div></div>
           <div class="canli-kuplar">
             <div class="canli-kup"><b id="ops-teslim2">0</b><span>TESLİM</span></div>
             <div class="canli-kup"><b id="ops-aktif">—</b><span>AKTİF ŞEHİR</span></div>
-            <div class="canli-kup"><b id="ops-ara">1</b><span>ARAÇ YOLDA</span></div>
+            <div class="canli-kup"><b id="ops-ara">—</b><span>ARAÇ DURUMU</span></div>
           </div>
         </div>
       </div>
@@ -1296,13 +1296,13 @@
   waButon.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); waBalon.classList.toggle('acik'); } });
 
   var opsSehirler = [
-    { ad: 'TOKAT', x: 470, y: 210 },
-    { ad: 'SAMSUN', x: 520, y: 85 },
-    { ad: 'AMASYA', x: 455, y: 150 },
-    { ad: 'ÇORUM', x: 380, y: 175 },
-    { ad: 'YOZGAT', x: 400, y: 310 },
-    { ad: 'KAYSERİ', x: 470, y: 400 },
-    { ad: 'SİVAS', x: 620, y: 270 }
+    { ad: 'SAMSUN', x: 720, y: 100 },
+    { ad: 'AMASYA', x: 610, y: 240 },
+    { ad: 'ÇORUM', x: 400, y: 230 },
+    { ad: 'TOKAT', x: 700, y: 390 },
+    { ad: 'YOZGAT', x: 430, y: 430 },
+    { ad: 'KAYSERİ', x: 520, y: 610 },
+    { ad: 'SİVAS', x: 990, y: 300 }
   ];
   var opsRotaSira = ['TOKAT', 'SAMSUN', 'AMASYA', 'ÇORUM', 'KAYSERİ'];
   var opsSvg = document.getElementById('ops-harita');
@@ -1612,8 +1612,30 @@
     document.getElementById('ops-bar').style.width = yuzde + '%';
     document.getElementById('ops-teslim2').textContent = d2 && d2.tip !== 'bekleme' ? gosterTamam(d2.tamam) + ' / ' + adet2 : '0 / ' + (adet2 || 0);
     document.getElementById('ops-aktif').textContent = sehir2 ? sehir2 : '—';
-    document.getElementById('ops-ara').textContent = sehir2 && d2 && d2.tip !== 'bekleme' ? '1' : '0';
   }
+
+  function opsAracDurum() {
+    var opsAraEl = document.getElementById('ops-ara');
+    if (!opsAraEl) return;
+    fetch(FIREBASE_URL + '/konum/guncel.json')
+      .then(function (r) { return r.json(); })
+      .catch(function () { return null; })
+      .then(function (kn) {
+        if (!kn || !kn.saat) { opsAraEl.textContent = '—'; opsAraEl.style.color = ''; return; }
+        var par = String(kn.saat).split(':');
+        if (par.length !== 2) { opsAraEl.textContent = '—'; opsAraEl.style.color = ''; return; }
+        var sonDk = parseInt(par[0], 10) * 60 + parseInt(par[1], 10);
+        var simdi = new Date();
+        var simdiDk = simdi.getHours() * 60 + simdi.getMinutes();
+        var fark = (simdiDk - sonDk + 1440) % 1440;
+        if (fark > 720) fark = 1440 - fark;
+        if (fark <= 5) { opsAraEl.textContent = 'YOLDA'; opsAraEl.style.color = '#7ed957'; }
+        else if (fark <= 30) { opsAraEl.textContent = 'DURDU'; opsAraEl.style.color = '#f7b347'; }
+        else { opsAraEl.textContent = '—'; opsAraEl.style.color = ''; }
+      });
+  }
+  opsAracDurum();
+  setInterval(opsAracDurum, 15000);
 
   urunleriDoldur();
   if ('IntersectionObserver' in window) {
