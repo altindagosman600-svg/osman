@@ -389,23 +389,27 @@
   var rotaCizgi = null;
   var sonKonum = null;
   var magazaMarkers = [];
+  var sonImza = '';
   var aracIkon = L.divIcon({ className: '', html: '<div class="marker-arac"></div>', iconSize: [22, 22], iconAnchor: [11, 22] });
 
   function haritaKur() {
-    if (harita) return;
+    if (harita) { harita.invalidateSize(); return; }
     if (typeof L === 'undefined') {
       setTimeout(haritaKur, 1000);
       return;
     }
     try {
-      harita = L.map('harita').setView([40.5, 36.5], 7);
-      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
-        attribution: '&copy; Esri, OpenStreetMap',
-        maxZoom: 19
+      harita = L.map('harita', { zoomControl: true, preferCanvas: false }).setView([40.5, 36.5], 7);
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap &copy; CARTO',
+        subdomains: 'abcd',
+        maxZoom: 20,
+        maxNativeZoom: 19,
+        updateWhenIdle: false
       }).addTo(harita);
+      harita.invalidateSize();
     } catch (e) { setTimeout(haritaKur, 2000); }
   }
-  haritaKur();
 
   function magazaKoordinat(sehir, ilce) {
     var s = KOORDINATLAR[sehir];
@@ -623,6 +627,19 @@
 
     var araQ = (aramaEl && aramaEl.value ? aramaEl.value : '').trim().toUpperCase().replace('İ', 'I');
 
+    var imza = '';
+    for (var kk in durumlar) { var dk2 = durumlar[kk]; imza += kk + (dk2.red || dk2.saat || '') + '|'; }
+    imza += '#' + magazalar.length + '#' + araQ;
+    var haritaDegisti = (imza !== sonImza) || (harita && magazaMarkers.length === 0);
+    sonImza = imza;
+
+    if (haritaDegisti) {
+      for (var t0 = 0; t0 < magazaMarkers.length; t0++) {
+        if (harita) harita.removeLayer(magazaMarkers[t0]);
+      }
+      magazaMarkers = [];
+    }
+
     for (var i = 0; i < magazalar.length; i++) {
       var m = magazalar[i].m;
       var anahtar = normalize(magazalar[i].sehir) + '-' + magazalar[i].sira;
@@ -692,7 +709,7 @@
         '</div>';
 
       var koord = magazaKoordinat(magazalar[i].sehir, m.i);
-      if (koord && harita) {
+      if (koord && harita && haritaDegisti) {
         var renk = durumTipi === 'teslim' ? '#1faa4c' : (durumTipi === 'red' ? '#c0392b' : '#c7d3e0');
         var cember = L.circleMarker(koord, {
           radius: mTip === 'T' ? 8 : 6,
@@ -705,10 +722,6 @@
       }
     }
 
-    for (var t = 0; t < magazaMarkers.length; t++) {
-      if (harita) harita.removeLayer(magazaMarkers[t]);
-    }
-    magazaMarkers = [];
     liste.innerHTML = html;
     var tamam = 0, red = 0;
     for (var k in durumlar) {
@@ -859,6 +872,8 @@
   }
 
   function baslat() {
+    haritaKur();
+    window.addEventListener('resize', function () { if (harita) harita.invalidateSize(); });
     secimKur();
     aramaEl = document.getElementById('arama');
     aramaEl.addEventListener('input', function () { yukle(); });
