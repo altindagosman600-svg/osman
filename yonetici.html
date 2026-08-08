@@ -529,12 +529,18 @@
     return h;
   }
 
+  var ilkYukleme = true;
+  var bekleScroll = 0;
+
   function yukle() {
     if (!secilenTarih) return;
+    bekleScroll = window.scrollY || document.documentElement.scrollTop;
     var magazalar = magazaListesiGetir();
     if (!magazalar.length) { liste.innerHTML = '<div class="bos-kap"><div class="ikon">🏬</div>Mağaza listesi yok<div class="acik">İl seçiminizi kontrol edin</div></div>'; return; }
-    liste.innerHTML = listeSkeleton();
-    document.getElementById('canli-panel').innerHTML = '<div class="skeleton" style="margin-top:2px;"><div class="sk-blok"><div class="sk-cizgi sk-uzun"></div></div></div>';
+    if (ilkYukleme) {
+      liste.innerHTML = listeSkeleton();
+      document.getElementById('canli-panel').innerHTML = '<div class="skeleton" style="margin-top:2px;"><div class="sk-blok"><div class="sk-cizgi sk-uzun"></div></div></div>';
+    }
 
     var istekler = [];
     if (secilenIl === '__TUMU__') {
@@ -567,7 +573,12 @@
           }
         }
       }
+      ilkYukleme = false;
       ciz(magazalar, durumlar);
+      var simdiScroll = window.scrollY || document.documentElement.scrollTop;
+      if (Math.abs(simdiScroll - bekleScroll) > window.innerHeight * 0.4) {
+        window.scrollTo(0, Math.min(bekleScroll, document.documentElement.scrollHeight));
+      }
     }).catch(function () {
       liste.innerHTML = '<div class="bos-kap"><div class="ikon">⚠️</div>Bağlantı hatası<div class="acik">İnterneti kontrol edin, 5 saniye içinde tekrar denenir</div></div>';
     });
