@@ -1361,7 +1361,7 @@
     var donus = opsEgr(opsNokta('KAYSERİ'), opsNokta('TOKAT'), 30 + (legs.length % 2) * 34);
     var rota = document.createElementNS(opsNS, 'path');
     rota.setAttribute('class', 'ops-rota');
-    rota.setAttribute('d', dOn + donus.d.slice(1));
+    rota.setAttribute('d', dOn + ' ' + donus.d.slice(donus.d.indexOf('Q')));
     opsSvg.appendChild(rota);
 
     var hedef = {};
