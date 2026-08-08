@@ -28,6 +28,11 @@
   .magaza { background:#fff; border-radius:14px; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px; border:1px solid #e3eaf2; box-shadow:0 2px 8px rgba(14,27,44,.05); }
   .magaza .ad { font-weight:700; font-size:.92rem; }
   .magaza .saat { font-size:.75rem; color:#6b7f94; margin-top:2px; }
+  .magaza .not { font-size:.7rem; color:#b35c00; background:#fff4e5; border:1px solid #f7d9a8; padding:3px 8px; border-radius:6px; margin-top:5px; display:inline-block; max-width:100%; }
+  .btn.not-btn { background:#eef2f7; color:#6b7f94; padding:11px 12px; }
+  .btn.not-btn.dolu { background:#fff4e5; color:#b35c00; }
+  #not-metin { width:100%; min-height:70px; padding:10px; font-size:.88rem; border:2px solid #e3eaf2; border-radius:10px; outline:none; resize:vertical; font-family:inherit; }
+  #not-metin:focus { border-color:var(--turuncu); }
   .btn { border:none; border-radius:999px; padding:11px 18px; font-weight:800; font-size:.84rem; cursor:pointer; transition:.2s; }
   .btn.teslim { background:linear-gradient(135deg,#f77f00,#d96b00); color:#fff; box-shadow:0 4px 12px rgba(247,127,0,.35); }
   .btn.teslim:active { transform:scale(.94); }
@@ -121,6 +126,17 @@
     <div id="urun-listesi"></div>
     <button class="btn teslim" id="kaydet-btn">✓ KAYDET VE TESLİM ET</button>
     <button class="btn vazgec" id="vazgec-btn">Vazgeç</button>
+  </div>
+</div>
+
+<div class="modal-kap" id="not-modal">
+  <div class="modal">
+    <h3>📝 MAĞAZA NOTU</h3>
+    <div class="alt" id="not-magaza">Mağaza —</div>
+    <textarea id="not-metin" placeholder="Kalıcı not (ör: İki kasa bırak, X gününe düş, kapıyı çal)"></textarea>
+    <button class="btn teslim" id="not-kaydet">💾 KAYDET</button>
+    <button class="btn" id="not-sil" style="background:#fdecea; color:#c0392b; width:100%; margin-top:8px;">🗑 Notu Sil</button>
+    <button class="btn vazgec" id="not-vazgec">Vazgeç</button>
   </div>
 </div>
 
@@ -300,6 +316,7 @@
   var gunDurum = {};
   var sonZiyaretler = {};
   var tamKonumlar = {};
+  var magazaNotlar = {};
   var ilKm = { SAMSUN: 150, SİNOP: 220, AMASYA: 90, ÇORUM: 180, SİVAS: 95, TOKAT: 140, YOZGAT: 160, GİRESUN: 230, KAYSERİ: 220 };
   var ortalamaHiz = 85;
   function varisSaati(s) {
@@ -470,10 +487,13 @@
         var kayitBtn = tamVar
           ? '<span class="rozet sok" style="font-size:.6rem;">✓ KONUM</span>'
           : '<button class="btn nav kaydet" data-kaydet="' + m.k + '" title="Mağazanın tam konumunu GPS ile kaydet" style="text-decoration:none; background:#fff4e5; color:#b35c00; padding:11px 12px;">📌</button>';
+        var not = magazaNotlar[m.k] ? magazaNotlar[m.k] : null;
+        var notBtn = '<button class="btn not-btn' + (not ? ' dolu' : '') + '" data-not="' + m.k + '" title="' + (not ? 'Notu düzenle' : 'Mağazaya not ekle') + '" style="padding:11px 12px;">📝</button>';
+        var notYazi = not ? '<div class="not">📝 ' + not + '</div>' : '';
         html += '<div class="magaza">' +
           '<div><div class="ad">' + m.m + rozet + '</div>' +
-          '<div class="saat">' + (d ? (d.red ? '✗ ' + d.red : 'Teslim: ' + d.saat) + ' · ' + alt : alt) + '</div></div>' +
-          '<div style="display:flex;gap:6px;align-items:center;">' + navBtn + kayitBtn +
+          '<div class="saat">' + (d ? (d.red ? '✗ ' + d.red : 'Teslim: ' + d.saat) + ' · ' + alt : alt) + '</div>' + notYazi + '</div>' +
+          '<div style="display:flex;gap:6px;align-items:center;">' + navBtn + kayitBtn + notBtn +
           (d
             ? (d.red
               ? '<button class="btn geri-al" data-geri="' + m.k + '" style="background:#fdecea;color:#c0392b;">✗ ' + d.red + '</button>'
@@ -545,7 +565,80 @@
     var kaydetBtn = e.target.closest('.btn.kaydet');
     if (kaydetBtn) {
       konumKaydet(kaydetBtn.getAttribute('data-kaydet'));
+      return;
     }
+    var notBtn = e.target.closest('.btn.not-btn');
+    if (notBtn) {
+      notAc(notBtn.getAttribute('data-not'));
+      return;
+    }
+  });
+
+  var beklemeNotKod = null;
+  var notModal = document.getElementById('not-modal');
+  var notMetin = document.getElementById('not-metin');
+  function notAc(kod) {
+    var bul = magazaBul(kod);
+    if (!bul) return;
+    beklemeNotKod = kod;
+    document.getElementById('not-magaza').textContent = bul.il + ' · ' + bul.magaza.m + ' · ' + bul.magaza.i;
+    notMetin.value = magazaNotlar[kod] || '';
+    notModal.style.display = 'flex';
+    notMetin.focus();
+  }
+  function notKaydet() {
+    if (beklemeNotKod === null) return;
+    var metin = notMetin.value.trim();
+    var kod4 = beklemeNotKod;
+    if (!metin) {
+      if (!magazaNotlar[kod4]) { notModal.style.display = 'none'; beklemeNotKod = null; return; }
+      fetch(FIREBASE_URL + '/magazanot/' + kod4 + '.json', { method: 'DELETE' }).then(function () {
+        delete magazaNotlar[kod4];
+        notModal.style.display = 'none';
+        beklemeNotKod = null;
+        baglanti.textContent = 'Not silindi';
+        listeCiz();
+      }).catch(function () {
+        baglanti.textContent = 'Bağlantı hatası — silinemedi';
+      });
+      return;
+    }
+    fetch(FIREBASE_URL + '/magazanot/' + kod4 + '.json', {
+      method: 'PUT',
+      body: JSON.stringify({ not: metin })
+    }).then(function () {
+      magazaNotlar[kod4] = metin;
+      notModal.style.display = 'none';
+      beklemeNotKod = null;
+      baglanti.textContent = '✓ Not kaydedildi';
+      listeCiz();
+    }).catch(function () {
+      baglanti.textContent = 'Bağlantı hatası — not kaydedilemedi';
+    });
+  }
+  function notSil() {
+    if (beklemeNotKod === null) return;
+    var kod5 = beklemeNotKod;
+    if (!magazaNotlar[kod5] || confirm('Bu mağazanın notu silinsin mi?')) {
+      fetch(FIREBASE_URL + '/magazanot/' + kod5 + '.json', { method: 'DELETE' }).then(function () {
+        delete magazaNotlar[kod5];
+        notModal.style.display = 'none';
+        beklemeNotKod = null;
+        baglanti.textContent = 'Not silindi';
+        listeCiz();
+      }).catch(function () {
+        baglanti.textContent = 'Bağlantı hatası — silinemedi';
+      });
+    }
+  }
+  document.getElementById('not-kaydet').addEventListener('click', notKaydet);
+  document.getElementById('not-sil').addEventListener('click', notSil);
+  document.getElementById('not-vazgec').addEventListener('click', function () {
+    notModal.style.display = 'none';
+    beklemeNotKod = null;
+  });
+  notModal.addEventListener('click', function (e) {
+    if (e.target === notModal) { notModal.style.display = 'none'; beklemeNotKod = null; }
   });
 
   function konumKaydet(kod) {
@@ -684,6 +777,16 @@
     }).catch(function () { });
     fetch(FIREBASE_URL + '/konumkayit.json').then(function (r) { return r.json(); }).then(function (d) {
       if (d) tamKonumlar = d;
+      listeCiz();
+    }).catch(function () { });
+    fetch(FIREBASE_URL + '/magazanot.json').then(function (r) { return r.json(); }).then(function (d) {
+      var yeni = {};
+      if (d) {
+        for (var nk in d) {
+          if (d[nk] && d[nk].not) yeni[nk] = d[nk].not;
+        }
+      }
+      magazaNotlar = yeni;
       listeCiz();
     }).catch(function () { });
     durumOku();
