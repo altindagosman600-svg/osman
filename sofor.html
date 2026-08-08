@@ -860,6 +860,8 @@
       .catch(function () { baglanti.textContent = 'Bağlantı hatası — kaydedilemedi'; toast('Kaydedilemedi — interneti kontrol edin', 'hata'); });
     durumButonYansit();
   }
+  if (yuklemeBtn) yuklemeBtn.addEventListener('click', function () { durumDamga(true); });
+  if (baslamaBtn) baslamaBtn.addEventListener('click', function () { durumDamga(false); });
 
   var donusBtn = document.getElementById('donus-btn');
   var donusYapildi = false;
