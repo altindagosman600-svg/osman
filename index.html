@@ -1118,9 +1118,9 @@
       </div>
       <div class="satir">
         <div class="simge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-        <span>Hafta içi hizmetinizdeyiz</span>
+        <span>Hafta içi ve Cumartesi hizmetinizdeyiz</span>
       </div>
-      <div class="not">Sipariş ve teklif için hafta içi ulaşabilirsiniz.</div>
+      <div class="not">Sipariş ve teklif için hafta içi ve Cumartesi ulaşabilirsiniz.</div>
     </div>
     <div class="teklif-kutu">
       <h3>TOPLU SİPARİŞ / TEKLİF</h3>
@@ -1182,7 +1182,8 @@
       <h4>Çalışma Saatleri</h4>
       <ul>
         <li>Hafta içi (Pzt – Cuma): <b style="color:#fff;">08:00 – 18:00</b></li>
-        <li>Cumartesi – Pazar: <b style="color:#fff;">Kapalı</b></li>
+        <li>Cumartesi: <b style="color:#fff;">08:00 – 18:00</b></li>
+        <li>Pazar: <b style="color:#fff;">Kapalı</b></li>
         <li><a href="https://www.google.com/maps?q=Tokat%20Merkez" target="_blank" rel="noopener">📍 Google Maps'te görüntüle</a></li>
       </ul>
     </div>
@@ -1856,7 +1857,7 @@
       etiket.textContent = 'KAPALI';
       baslik.textContent = 'Bugün Kapalıyız';
       for (var i = 0; i < 5; i++) durumlar[i] = { aktif: false, txt: 'Kapalı', cls: '' };
-      bilgi = { tamam: '—', yolda: 'Hafta içi (Pzt–Cuma) hizmet veriyoruz', varis: '—' };
+      bilgi = { tamam: '—', yolda: 'Hafta içi ve Cumartesi hizmet veriyoruz', varis: '—' };
     } else {
       d = canliDurum(t, sehir);
       ilerleme = d.ilerleme;
