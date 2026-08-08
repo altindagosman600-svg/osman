@@ -303,7 +303,7 @@
   .oper-dunya { position: absolute; inset: 0; pointer-events: none; opacity: .05; }
   .oper-dunya svg { width: 100%; height: 100%; }
   .oper-kap { position: relative; z-index: 2; }
-  .oper-grid { display: grid; grid-template-columns: 73fr 27fr; gap: 26px; align-items: stretch; margin-top: 6px; }
+  .oper-grid { display: grid; grid-template-columns: 80fr 20fr; gap: 26px; align-items: stretch; margin-top: 6px; }
   .harita-buyuk {
     border-radius: 24px; border: 1px solid rgba(255, 255, 255, .1);
     background: rgba(9, 18, 32, .65);
@@ -911,7 +911,7 @@
           <div class="kutu" style="right:7%; top:20%; width:26px; height:26px; animation-delay:3.1s;"></div>
           <div class="kutu" style="right:13%; bottom:10%; width:30px; height:30px; animation-delay:4.4s;"></div>
         </div>
-        <svg id="ops-harita" viewBox="0 0 1200 700" aria-label="Operasyon merkezi dağıtım ağı haritası"></svg>
+        <svg id="ops-harita" viewBox="0 0 1600 700" aria-label="Operasyon merkezi dağıtım ağı haritası"></svg>
         <div class="canli-bar">
           <div class="ust"><span>Bugünkü teslimat</span><b id="ops-yuzde">%0</b></div>
           <div class="bar-yol"><div class="bar-dolgu" id="ops-bar"></div></div>
@@ -1296,13 +1296,13 @@
   waButon.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); waBalon.classList.toggle('acik'); } });
 
   var opsSehirler = [
-    { ad: 'SAMSUN', x: 720, y: 100 },
-    { ad: 'AMASYA', x: 610, y: 240 },
-    { ad: 'ÇORUM', x: 400, y: 230 },
-    { ad: 'TOKAT', x: 700, y: 390 },
-    { ad: 'YOZGAT', x: 430, y: 430 },
-    { ad: 'KAYSERİ', x: 520, y: 610 },
-    { ad: 'SİVAS', x: 990, y: 300 }
+    { ad: 'SAMSUN', x: 1000, y: 100 },
+    { ad: 'AMASYA', x: 820, y: 250 },
+    { ad: 'ÇORUM', x: 480, y: 240 },
+    { ad: 'TOKAT', x: 950, y: 400 },
+    { ad: 'YOZGAT', x: 550, y: 440 },
+    { ad: 'KAYSERİ', x: 680, y: 620 },
+    { ad: 'SİVAS', x: 1380, y: 300 }
   ];
   var opsRotaSira = ['TOKAT', 'SAMSUN', 'AMASYA', 'ÇORUM', 'KAYSERİ'];
   var opsSvg = document.getElementById('ops-harita');
